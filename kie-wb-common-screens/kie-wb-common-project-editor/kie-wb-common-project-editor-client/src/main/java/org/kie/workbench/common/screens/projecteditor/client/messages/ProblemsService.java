@@ -36,8 +36,7 @@ import org.uberfire.client.workbench.PanelManager;
 @ApplicationScoped
 public class ProblemsService {
 
-    private static final String HOME_PERSPECTIVE = "Home";
-    private static final String ARTIFACT_PERSPECTIVE = "org.guvnor.m2repo.client.perspectives.GuvnorM2RepoPerspective";
+    private static final String AUTHORING_PERSPECTIVE = "Project Authoring";
 
     private final PlaceManager placeManager;
     private final PanelManager panelManager;
@@ -56,7 +55,7 @@ public class ProblemsService {
         for ( BuildMessage buildMessage : results.getMessages() ) {
             list.add( buildMessage );
         }
-        if ( !panelManager.getPerspective().getName().equals( HOME_PERSPECTIVE ) ) {
+        if ( panelManager.getPerspective().getName().equals(AUTHORING_PERSPECTIVE) ) {
             placeManager.goTo( "org.kie.guvnor.Problems" );
         }
     }
@@ -72,8 +71,7 @@ public class ProblemsService {
         for ( BuildMessage buildMessage : addedMessages ) {
             list.add( buildMessage );
         }
-        if ( !panelManager.getPerspective().getName().equals( HOME_PERSPECTIVE ) &&
-                !panelManager.getPerspective().getName().equals( ARTIFACT_PERSPECTIVE ) ) {
+        if ( panelManager.getPerspective().getName().equals(AUTHORING_PERSPECTIVE) ) {
             placeManager.goTo( "org.kie.guvnor.Problems" );
         }
     }
