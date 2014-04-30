@@ -160,6 +160,29 @@
               </b:Controls>
             </b:ControlGroup>
           </b:ControlGroup>
+
+          <b:ControlGroup>
+            <b:ControlLabel for="key">
+              <g:InlineHTML text="Key"/>
+            </b:ControlLabel>
+            <b:Controls>
+              <b:Tooltip text="Key" placement="RIGHT" trigger="FOCUS">
+                <b:TextBox b:id="key" ui:field="keyTextBox"/>
+              </b:Tooltip>
+            </b:Controls>
+          </b:ControlGroup>
+
+          <b:ControlGroup>
+            <b:ControlLabel for="value">
+              <g:InlineHTML text="Value"/>
+            </b:ControlLabel>
+            <b:Controls>
+              <b:Tooltip text="Value" placement="RIGHT" trigger="FOCUS">
+                <b:TextBox b:id="value" ui:field="valueTextBox"/>
+              </b:Tooltip>
+            </b:Controls>
+          </b:ControlGroup>
+
         </b:Fieldset>
         <g:SimplePanel ui:field="errorPanel"/>
         <b:FormActions>

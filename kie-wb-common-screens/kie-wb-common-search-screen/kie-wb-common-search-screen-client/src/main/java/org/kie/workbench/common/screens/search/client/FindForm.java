@@ -125,6 +125,12 @@ public class FindForm
     @UiField
     SimplePanel simplePanel;
 
+    @UiField
+    TextBox keyTextBox;
+
+    @UiField
+    TextBox valueTextBox;
+
     @PostConstruct
     public void init() {
         createdAfter = new DateBox();
@@ -227,6 +233,11 @@ public class FindForm
 
         if ( lastModifiedBefore.getValue() != null ) {
             hasSomeDateValue = true;
+        }
+
+        if ( !( keyTextBox.getText().trim().isEmpty() || valueTextBox.getText().trim().isEmpty() ) ) {
+            metadata.put( keyTextBox.getText().trim(),
+                          valueTextBox.getText().trim() );
         }
 
         if ( metadata.size() == 0 && !hasSomeDateValue ) {
