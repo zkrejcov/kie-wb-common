@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
-import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.lucene.analysis.Analyzer;
@@ -41,8 +40,9 @@ import org.uberfire.metadata.backend.lucene.LuceneConfig;
 import org.uberfire.metadata.backend.lucene.LuceneConfigBuilder;
 import org.uberfire.metadata.engine.Indexer;
 import org.uberfire.metadata.io.IOServiceIndexedImpl;
+import org.uberfire.workbench.type.ResourceTypeDefinition;
 
-public abstract class BaseIndexingTest {
+public abstract class BaseIndexingTest<T extends ResourceTypeDefinition> {
 
     private IOService ioService = null;
     private static LuceneConfig config;
@@ -85,9 +85,11 @@ public abstract class BaseIndexingTest {
 
     protected abstract String getRepositoryName();
 
-    protected abstract Set<TestIndexer> getIndexers();
+    protected abstract TestIndexer<T> getIndexer();
 
     protected abstract Map<String, Analyzer> getAnalyzers();
+
+    protected abstract T getResourceTypeDefinition();
 
     protected Path getDirectoryPath() {
         final String repositoryName = getRepositoryName();
@@ -105,7 +107,7 @@ public abstract class BaseIndexingTest {
                            propertiesToString( properties ) );
     }
 
-    protected String loadDrl( final String fileName ) throws IOException {
+    protected String loadText( final String fileName ) throws IOException {
         final BufferedReader br = new BufferedReader( new InputStreamReader( this.getClass().getResourceAsStream( fileName ) ) );
         try {
             StringBuilder sb = new StringBuilder();
@@ -132,12 +134,12 @@ public abstract class BaseIndexingTest {
 
     protected IOService ioService() {
         if ( ioService == null ) {
-            final Set<TestIndexer> indexers = getIndexers();
+            final TestIndexer indexer = getIndexer();
             final Map<String, Analyzer> analyzers = getAnalyzers();
             config = new LuceneConfigBuilder()
                     .withInMemoryMetaModelStore()
                     .usingIndexers( new HashSet<Indexer>() {{
-                        addAll( indexers );
+                        add( indexer );
                     }} )
                     .usingAnalyzers( analyzers )
                     .useDirectoryBasedIndex()
@@ -147,9 +149,8 @@ public abstract class BaseIndexingTest {
             //Mock CDI injection and setup
             ioService = new IOServiceIndexedImpl( config.getIndexEngine(),
                                                   config.getIndexers() );
-            for ( TestIndexer indexer : indexers ) {
-                indexer.setIOService( ioService );
-            }
+            indexer.setIOService( ioService );
+            indexer.setResourceTypeDefinition( getResourceTypeDefinition() );
         }
         return ioService;
     }

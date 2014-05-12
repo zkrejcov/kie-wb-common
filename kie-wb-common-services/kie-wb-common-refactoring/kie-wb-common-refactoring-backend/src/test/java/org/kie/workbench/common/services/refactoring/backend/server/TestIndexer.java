@@ -17,13 +17,20 @@ package org.kie.workbench.common.services.refactoring.backend.server;
 
 import org.uberfire.io.IOService;
 import org.uberfire.metadata.engine.Indexer;
+import org.uberfire.workbench.type.ResourceTypeDefinition;
 
-public interface TestIndexer extends Indexer {
+public interface TestIndexer<T extends ResourceTypeDefinition> extends Indexer {
 
     /**
      * Mock CDI injection of IOService
      * @param ioService
      */
     void setIOService( final IOService ioService );
+
+    /**
+     * Mock CDI injection of ResourceTypeDefinition
+     * @param type
+     */
+    void setResourceTypeDefinition( final T type );
 
 }

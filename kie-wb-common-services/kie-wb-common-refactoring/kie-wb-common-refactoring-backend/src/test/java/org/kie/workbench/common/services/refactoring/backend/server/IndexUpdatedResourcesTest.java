@@ -18,10 +18,8 @@ package org.kie.workbench.common.services.refactoring.backend.server;
 
 import java.io.IOException;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.index.Term;
@@ -97,15 +95,18 @@ public class IndexUpdatedResourcesTest extends BaseIndexingTest {
     }
 
     @Override
-    protected Set<TestIndexer> getIndexers() {
-        return new HashSet<TestIndexer>() {{
-            add( new TestPropertiesFileIndexer() );
-        }};
+    protected TestIndexer getIndexer() {
+        return new TestPropertiesFileIndexer();
     }
 
     @Override
     public Map<String, Analyzer> getAnalyzers() {
         return Collections.EMPTY_MAP;
+    }
+
+    @Override
+    protected TestPropertiesFileTypeDefinition getResourceTypeDefinition() {
+        return new TestPropertiesFileTypeDefinition();
     }
 
     @Override

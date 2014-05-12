@@ -23,6 +23,7 @@ import java.util.Properties;
 import javax.enterprise.context.ApplicationScoped;
 
 import org.kie.workbench.common.services.refactoring.backend.server.util.KObjectUtil;
+import org.uberfire.backend.server.util.Paths;
 import org.uberfire.commons.data.Pair;
 import org.uberfire.io.IOService;
 import org.uberfire.java.nio.file.Path;
@@ -33,7 +34,9 @@ import org.uberfire.metadata.model.KObjectKey;
  * Test indexer that simply loads Properties from the file
  */
 @ApplicationScoped
-public class TestPropertiesFileIndexer implements TestIndexer {
+public class TestPropertiesFileIndexer implements TestIndexer<TestPropertiesFileTypeDefinition> {
+
+    private TestPropertiesFileTypeDefinition type;
 
     private IOService ioService;
 
@@ -43,8 +46,13 @@ public class TestPropertiesFileIndexer implements TestIndexer {
     }
 
     @Override
+    public void setResourceTypeDefinition( final TestPropertiesFileTypeDefinition type ) {
+        this.type = type;
+    }
+
+    @Override
     public boolean supportsPath( final Path path ) {
-        return path.toUri().toString().endsWith( ".properties" );
+        return type.accept( Paths.convert( path ) );
     }
 
     @Override
