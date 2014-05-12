@@ -61,13 +61,13 @@ import org.kie.workbench.common.services.refactoring.model.index.Type;
 import org.uberfire.commons.data.Pair;
 import org.uberfire.commons.validation.PortablePreconditions;
 
-public class PackageDescrVisitor {
+public class PackageDescrIndexVisitor {
 
     private final DefaultIndexBuilder builder;
     private final PackageDescr packageDescr;
 
-    public PackageDescrVisitor( final DefaultIndexBuilder builder,
-                                final PackageDescr packageDescr ) {
+    public PackageDescrIndexVisitor( final DefaultIndexBuilder builder,
+                                     final PackageDescr packageDescr ) {
         this.builder = PortablePreconditions.checkNotNull( "builder",
                                                            builder );
         this.packageDescr = PortablePreconditions.checkNotNull( "packageDescr",
