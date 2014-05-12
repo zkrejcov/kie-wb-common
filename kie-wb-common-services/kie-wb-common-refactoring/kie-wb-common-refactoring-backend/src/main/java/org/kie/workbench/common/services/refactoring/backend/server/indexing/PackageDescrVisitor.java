@@ -303,6 +303,9 @@ public class PackageDescrVisitor {
     }
 
     protected void visit( final PackageDescr descr ) {
+        for ( GlobalDescr globalDescr : descr.getGlobals() ) {
+            visit( globalDescr );
+        }
         for ( RuleDescr ruleDescr : descr.getRules() ) {
             visit( ruleDescr );
         }
@@ -363,6 +366,9 @@ public class PackageDescrVisitor {
 
     private String getFullyQualifiedClassName( final PackageDescr packageDescr,
                                                final String typeName ) {
+        if ( typeName.contains( "." ) ) {
+            return typeName;
+        }
         for ( ImportDescr importDescr : packageDescr.getImports() ) {
             if ( importDescr.getTarget().endsWith( typeName ) ) {
                 return importDescr.getTarget();

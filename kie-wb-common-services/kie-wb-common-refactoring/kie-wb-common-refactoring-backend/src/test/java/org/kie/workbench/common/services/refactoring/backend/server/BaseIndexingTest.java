@@ -40,7 +40,10 @@ import org.uberfire.metadata.backend.lucene.LuceneConfig;
 import org.uberfire.metadata.backend.lucene.LuceneConfigBuilder;
 import org.uberfire.metadata.engine.Indexer;
 import org.uberfire.metadata.io.IOServiceIndexedImpl;
+import org.uberfire.metadata.model.KObject;
 import org.uberfire.workbench.type.ResourceTypeDefinition;
+
+import static org.junit.Assert.*;
 
 public abstract class BaseIndexingTest<T extends ResourceTypeDefinition> {
 
@@ -153,6 +156,18 @@ public abstract class BaseIndexingTest<T extends ResourceTypeDefinition> {
             indexer.setResourceTypeDefinition( getResourceTypeDefinition() );
         }
         return ioService;
+    }
+
+    protected void assertContains( final List<KObject> results,
+                                   final Path path ) {
+        for ( KObject kObject : results ) {
+            final String key = kObject.getKey();
+            final String fileName = path.getFileName().toString();
+            if ( key.endsWith( fileName ) ) {
+                return;
+            }
+        }
+        fail( "Results do not contain expected Path '" + path.toUri().toString() );
     }
 
     private static File createTempDirectory() throws IOException {
