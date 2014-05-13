@@ -20,6 +20,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.uberfire.commons.data.Pair;
 import org.uberfire.java.nio.base.FileSystemId;
@@ -99,7 +100,7 @@ public class KObjectUtil {
     }
 
     public static KObject toKObject( final Path path,
-                                     final List<Pair<String, String>> indexElements ) {
+                                     final Set<Pair<String, String>> indexElements ) {
         return new KObject() {
 
             @Override

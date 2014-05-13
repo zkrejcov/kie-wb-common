@@ -15,7 +15,6 @@
  */
 package org.kie.workbench.common.services.refactoring.backend.server.indexing;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -70,8 +69,8 @@ public class DefaultIndexBuilder {
         return this;
     }
 
-    public List<Pair<String, String>> build() {
-        final List<Pair<String, String>> indexElements = new ArrayList<Pair<String, String>>();
+    public Set<Pair<String, String>> build() {
+        final Set<Pair<String, String>> indexElements = new HashSet<Pair<String, String>>();
         for ( Rule rule : rules ) {
             addIndexElements( indexElements,
                               rule );
@@ -91,7 +90,7 @@ public class DefaultIndexBuilder {
         return indexElements;
     }
 
-    private void addIndexElements( final List<Pair<String, String>> indexElements,
+    private void addIndexElements( final Set<Pair<String, String>> indexElements,
                                    final IndexElementsGenerator generator ) {
         if ( generator == null ) {
             return;

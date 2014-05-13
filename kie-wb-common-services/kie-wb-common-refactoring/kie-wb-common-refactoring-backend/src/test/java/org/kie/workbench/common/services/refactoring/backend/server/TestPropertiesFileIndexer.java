@@ -17,9 +17,9 @@ package org.kie.workbench.common.services.refactoring.backend.server;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
 import javax.enterprise.context.ApplicationScoped;
 
 import org.kie.workbench.common.services.refactoring.backend.server.util.KObjectUtil;
@@ -67,7 +67,7 @@ public class TestPropertiesFileIndexer implements TestIndexer<TestPropertiesFile
         } catch ( IOException e ) {
             //Swallow
         }
-        final List<Pair<String, String>> indexElements = new ArrayList<Pair<String, String>>();
+        final Set<Pair<String, String>> indexElements = new HashSet<Pair<String, String>>();
         for ( String propertyName : properties.stringPropertyNames() ) {
             indexElements.add( new Pair<String, String>( propertyName,
                                                          properties.getProperty( propertyName ) ) );

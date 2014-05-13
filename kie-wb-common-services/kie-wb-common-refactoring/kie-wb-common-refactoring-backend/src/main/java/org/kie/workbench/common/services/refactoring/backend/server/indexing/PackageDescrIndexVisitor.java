@@ -15,7 +15,7 @@
  */
 package org.kie.workbench.common.services.refactoring.backend.server.indexing;
 
-import java.util.List;
+import java.util.Set;
 
 import org.drools.compiler.lang.descr.AccessorDescr;
 import org.drools.compiler.lang.descr.AccumulateDescr;
@@ -74,7 +74,7 @@ public class PackageDescrIndexVisitor {
                                                                 packageDescr );
     }
 
-    public List<Pair<String, String>> visit() {
+    public Set<Pair<String, String>> visit() {
         visit( packageDescr );
         return builder.build();
     }
