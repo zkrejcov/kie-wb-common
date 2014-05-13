@@ -25,13 +25,17 @@ public class TypeField implements IndexElementsGenerator {
 
     private String name;
     private String fullyQualifiedClassName;
+    private String parentClassFullQualifiedClassName;
 
     public TypeField( final String name,
-                      final String fullyQualifiedClassName ) {
+                      final String fullyQualifiedClassName,
+                      final String parentClassFullQualifiedClassName ) {
         this.name = PortablePreconditions.checkNotNull( "name",
                                                         name );
         this.fullyQualifiedClassName = PortablePreconditions.checkNotNull( "fullyQualifiedClassName",
                                                                            fullyQualifiedClassName );
+        this.parentClassFullQualifiedClassName = PortablePreconditions.checkNotNull( "parentClassFullQualifiedClassName",
+                                                                                     parentClassFullQualifiedClassName );
     }
 
     @Override
@@ -41,6 +45,8 @@ public class TypeField implements IndexElementsGenerator {
                                                      name ) );
         indexElements.add( new Pair<String, String>( IndexableElements.FIELD_TYPE_FULLY_QUALIFIED_CLASS_NAME.toString(),
                                                      fullyQualifiedClassName ) );
+        indexElements.add( new Pair<String, String>( IndexableElements.TYPE_NAME.toString() + ":" + parentClassFullQualifiedClassName + ":" + IndexableElements.FIELD_TYPE_NAME.toString(),
+                                                     name ) );
         return indexElements;
     }
 

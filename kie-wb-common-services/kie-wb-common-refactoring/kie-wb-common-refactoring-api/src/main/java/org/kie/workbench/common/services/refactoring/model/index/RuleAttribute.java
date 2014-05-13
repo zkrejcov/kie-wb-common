@@ -41,6 +41,8 @@ public class RuleAttribute implements IndexElementsGenerator {
                                                      name ) );
         indexElements.add( new Pair<String, String>( IndexableElements.RULE_ATTRIBUTE_VALUE.toString(),
                                                      value ) );
+        indexElements.add( new Pair<String, String>( IndexableElements.RULE_ATTRIBUTE_NAME.toString() + ":" + name + ":" + IndexableElements.RULE_ATTRIBUTE_VALUE.toString(),
+                                                     value ) );
         return indexElements;
     }
 
