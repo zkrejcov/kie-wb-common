@@ -26,6 +26,11 @@ public class Rule implements IndexElementsGenerator {
     private String name;
     private String parentName;
 
+    public Rule( final String name ) {
+        this( name,
+              null );
+    }
+
     public Rule( final String name,
                  final String parentName ) {
         this.name = PortablePreconditions.checkNotNull( "name",
