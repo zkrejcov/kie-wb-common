@@ -35,6 +35,9 @@ import org.guvnor.common.services.project.model.Package;
 import org.guvnor.common.services.project.model.Project;
 import org.guvnor.common.services.project.service.POMService;
 import org.guvnor.common.services.project.service.ProjectService;
+import org.guvnor.common.services.shared.events.PublishBatchMessagesEvent;
+import org.guvnor.common.services.shared.events.PublishMessagesEvent;
+import org.guvnor.common.services.shared.events.SystemMessage;
 import org.jboss.errai.bus.server.annotations.Service;
 import org.jboss.forge.roaster.Roaster;
 import org.jboss.forge.roaster.model.source.FieldSource;
@@ -122,6 +125,12 @@ public class DataModelerServiceImpl implements DataModelerService {
     @Inject
     private Event<IncrementalBuildResults> incrementalBuildEvent;
 
+    @Inject
+    private Event<PublishBatchMessagesEvent> publishMessagesEvent;
+
+    @Inject
+    private Event<PublishBatchMessagesEvent> publishBatchMessagesEvent;
+
     private static final String DEFAULT_COMMIT_MESSAGE = "Data modeller generated action.";
 
     public DataModelerServiceImpl() {
@@ -187,6 +196,27 @@ public class DataModelerServiceImpl implements DataModelerService {
     }
 
     private void processErrors( Project project, ModelDriverResult result ) {
+        PublishBatchMessagesEvent publishEvent = new PublishBatchMessagesEvent();
+        publishEvent.setCleanExisting( true );
+        publishEvent.setUserId( identity != null ? identity.getName() : null );
+        publishEvent.setMessageType( "DataModeler" );
+
+        SystemMessage systemMessage;
+        for ( ModelDriverError error : result.getErrors()) {
+            systemMessage = new SystemMessage();
+            systemMessage.setMessageType( "DataModeler" );
+            systemMessage.setLevel( SystemMessage.Level.ERROR );
+            systemMessage.setId( error.getId() );
+            systemMessage.setText( error.getMessage() );
+            systemMessage.setColumn( error.getColumn() );
+            systemMessage.setLine( error.getLine() );
+            systemMessage.setPath( Paths.convert( error.getFile() ) );
+            publishEvent.getMessagesToPublish().add( systemMessage );
+        }
+
+        publishMessagesEvent.fire( publishEvent );
+
+        /*
         IncrementalBuildResults buildResults = new IncrementalBuildResults( );
         BuildMessage buildMessage;
         for ( ModelDriverError error : result.getErrors()) {
@@ -200,6 +230,7 @@ public class DataModelerServiceImpl implements DataModelerService {
             buildResults.addAddedMessage( buildMessage );
         }
         incrementalBuildEvent.fire( buildResults );
+        */
     }
 
     @Override

@@ -22,10 +22,13 @@ import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 
 import com.google.gwt.user.client.ui.Widget;
+import org.guvnor.common.services.project.builder.model.BuildMessage;
 import org.guvnor.common.services.project.builder.model.BuildResults;
 import org.guvnor.common.services.project.builder.service.BuildService;
+import org.guvnor.common.services.project.builder.util.BuildMessageUtils;
 import org.guvnor.common.services.project.context.ProjectContextChangeEvent;
 import org.guvnor.common.services.project.model.Project;
+import org.guvnor.common.services.shared.events.PublishBatchMessagesEvent;
 import org.jboss.errai.common.client.api.Caller;
 import org.jboss.errai.common.client.api.RemoteCallback;
 import org.kie.workbench.common.screens.projecteditor.client.resources.ProjectEditorResources;
@@ -51,7 +54,7 @@ public class ProblemsScreen
     private final ProblemsService problemsService;
 
     private final Caller<BuildService> buildService;
-    private final Event<BuildResults> buildResultsEvent;
+    private final Event<PublishBatchMessagesEvent> publishBatchMessagesEvent;
 
     private Project project;
 
@@ -62,12 +65,12 @@ public class ProblemsScreen
                            final PlaceManager placeManager,
                            final ProblemsService problemsService,
                            final Caller<BuildService> buildService,
-                           final Event<BuildResults> buildResultsEvent ) {
+                           final Event<PublishBatchMessagesEvent> publishBatchMessagesEvent ) {
         this.view = view;
         this.placeManager = placeManager;
         this.problemsService = problemsService;
         this.buildService = buildService;
-        this.buildResultsEvent = buildResultsEvent;
+        this.publishBatchMessagesEvent = publishBatchMessagesEvent;
 
         makeMenuBar();
 
@@ -84,7 +87,16 @@ public class ProblemsScreen
                         buildService.call( new RemoteCallback<BuildResults>() {
                             @Override
                             public void callback( final BuildResults results ) {
-                                buildResultsEvent.fire( results );
+                                PublishBatchMessagesEvent batchMessages = new PublishBatchMessagesEvent();
+                                batchMessages.setCleanExisting( true );
+                                batchMessages.setMessageType( BuildMessageUtils.BUILD_SYSTEM_MESSAGE );
+
+                                if ( results.getMessages() != null ) {
+                                    for ( BuildMessage buildMessage : results.getMessages() ) {
+                                        batchMessages.getMessagesToPublish().add( BuildMessageUtils.convert( buildMessage ) );
+                                    }
+                                }
+                                publishBatchMessagesEvent.fire( batchMessages );
                                 view.hideBusyIndicator();
                             }
                         }, new HasBusyIndicatorDefaultErrorCallback( view ) ).build( project );
