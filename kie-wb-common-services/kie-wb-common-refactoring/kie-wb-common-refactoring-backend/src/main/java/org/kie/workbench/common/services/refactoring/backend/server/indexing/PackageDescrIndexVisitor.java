@@ -15,8 +15,13 @@
  */
 package org.kie.workbench.common.services.refactoring.backend.server.indexing;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
+import org.drools.compiler.compiler.DrlExprParser;
 import org.drools.compiler.lang.descr.AccessorDescr;
 import org.drools.compiler.lang.descr.AccumulateDescr;
 import org.drools.compiler.lang.descr.ActionDescr;
@@ -30,6 +35,7 @@ import org.drools.compiler.lang.descr.CollectDescr;
 import org.drools.compiler.lang.descr.ConstraintConnectiveDescr;
 import org.drools.compiler.lang.descr.DeclarativeInvokerDescr;
 import org.drools.compiler.lang.descr.ExistsDescr;
+import org.drools.compiler.lang.descr.ExprConstraintDescr;
 import org.drools.compiler.lang.descr.FactTemplateDescr;
 import org.drools.compiler.lang.descr.FieldAccessDescr;
 import org.drools.compiler.lang.descr.FieldConstraintDescr;
@@ -55,19 +61,61 @@ import org.drools.compiler.lang.descr.StringConnectiveDescr;
 import org.drools.compiler.lang.descr.TypeDeclarationDescr;
 import org.drools.compiler.lang.descr.TypeFieldDescr;
 import org.drools.compiler.lang.descr.WindowDeclarationDescr;
+import org.drools.workbench.models.datamodel.oracle.ModelField;
+import org.drools.workbench.models.datamodel.oracle.ProjectDataModelOracle;
+import org.kie.internal.builder.conf.LanguageLevelOption;
 import org.kie.workbench.common.services.refactoring.model.index.Rule;
 import org.kie.workbench.common.services.refactoring.model.index.RuleAttribute;
 import org.kie.workbench.common.services.refactoring.model.index.Type;
+import org.kie.workbench.common.services.refactoring.model.index.TypeField;
 import org.uberfire.commons.data.Pair;
 import org.uberfire.commons.validation.PortablePreconditions;
 
 public class PackageDescrIndexVisitor {
 
+    private final ProjectDataModelOracle dmo;
     private final DefaultIndexBuilder builder;
     private final PackageDescr packageDescr;
+    private final PackageDescrIndexVisitorContext context = new PackageDescrIndexVisitorContext();
 
-    public PackageDescrIndexVisitor( final DefaultIndexBuilder builder,
+    private static class PackageDescrIndexVisitorContext {
+
+        private Deque<PatternDescr> patterns = new ArrayDeque<PatternDescr>();
+        private Map<String, String> boundTypes = new HashMap<String, String>();
+
+        void startPattern( final PatternDescr descr ) {
+            patterns.add( descr );
+        }
+
+        void endPattern() {
+            patterns.pop();
+        }
+
+        PatternDescr getCurrentPattern() {
+            return patterns.peek();
+        }
+
+        void addBoundType( final String identifier,
+                           final String fullyQualifiedClassName ) {
+            boundTypes.put( identifier,
+                            fullyQualifiedClassName );
+        }
+
+        boolean isBoundType( final String identifier ) {
+            return boundTypes.containsKey( identifier );
+        }
+
+        String getBoundType( final String identifier ) {
+            return boundTypes.get( identifier );
+        }
+
+    }
+
+    public PackageDescrIndexVisitor( final ProjectDataModelOracle dmo,
+                                     final DefaultIndexBuilder builder,
                                      final PackageDescr packageDescr ) {
+        this.dmo = PortablePreconditions.checkNotNull( "dmo",
+                                                       dmo );
         this.builder = PortablePreconditions.checkNotNull( "builder",
                                                            builder );
         this.packageDescr = PortablePreconditions.checkNotNull( "packageDescr",
@@ -102,6 +150,8 @@ public class PackageDescrIndexVisitor {
             visit( (ConstraintConnectiveDescr) descr );
         } else if ( descr instanceof ExistsDescr ) {
             visit( (ExistsDescr) descr );
+        } else if ( descr instanceof ExprConstraintDescr ) {
+            visit( (ExprConstraintDescr) descr );
         } else if ( descr instanceof FactTemplateDescr ) {
             visit( (FactTemplateDescr) descr );
         } else if ( descr instanceof FieldAccessDescr ) {
@@ -170,6 +220,7 @@ public class PackageDescrIndexVisitor {
 
     protected void visit( final ActionDescr descr ) {
         //TODO - Not yet implemented
+        System.out.println( context.getCurrentPattern() );
         System.out.println( descr + " : " + descr.getClass().getName() );
     }
 
@@ -181,12 +232,53 @@ public class PackageDescrIndexVisitor {
 
     protected void visit( final AnnotationDescr descr ) {
         //TODO - Not yet implemented
+        System.out.println( context.getCurrentPattern() );
         System.out.println( descr + " : " + descr.getClass().getName() );
     }
 
     protected void visit( final AtomicExprDescr descr ) {
-        //TODO - Not yet implemented
-        System.out.println( descr + " : " + descr.getClass().getName() );
+        String expression = descr.getExpression();
+        parseExpression(expression);
+    }
+
+    private String parseExpression(String expression) {
+        String factType = context.getCurrentPattern().getObjectType();
+        String fullyQualifiedClassName = getFullyQualifiedClassName( packageDescr,
+                                                                     factType );
+        while ( expression.contains( "." ) ) {
+            String fieldName = expression.substring( 0,
+                                                     expression.indexOf( "." ) );
+            if ( context.isBoundType( fieldName ) ) {
+                fullyQualifiedClassName = context.getBoundType( fieldName );
+                expression = expression.substring( expression.indexOf( "." ) + 1 );
+                continue;
+            }
+            expression = expression.substring( expression.indexOf( "." ) + 1 );
+            factType = addField( fieldName,
+                                 fullyQualifiedClassName );
+            if ( factType != null ) {
+                fullyQualifiedClassName = getFullyQualifiedClassName( packageDescr,
+                                                                      factType );
+            }
+        }
+        return addField( expression,
+                  fullyQualifiedClassName );
+    }
+
+    private String addField( final String fieldName,
+                             final String fullyQualifiedClassName ) {
+        final ModelField[] mfs = dmo.getProjectModelFields().get( fullyQualifiedClassName );
+        if ( mfs != null ) {
+            for ( ModelField mf : mfs ) {
+                if ( mf.getName().equals( fieldName ) ) {
+                    builder.addField( new TypeField( fieldName,
+                                                     mf.getClassName(),
+                                                     fullyQualifiedClassName ) );
+                    return mf.getClassName();
+                }
+            }
+        }
+        return null;
     }
 
     protected void visit( final AttributeDescr descr ) {
@@ -196,6 +288,11 @@ public class PackageDescrIndexVisitor {
 
     protected void visit( final BindingDescr descr ) {
         //TODO - Not yet implemented
+        final String identifier = descr.getVariable();
+        final String fullyQualifiedClassName = parseExpression( descr.getExpression() );
+        context.addBoundType( identifier,
+                              fullyQualifiedClassName);
+        System.out.println( context.getCurrentPattern() );
         System.out.println( descr + " : " + descr.getClass().getName() );
     }
 
@@ -219,6 +316,12 @@ public class PackageDescrIndexVisitor {
         }
     }
 
+    protected void visit( final ExprConstraintDescr descr ) {
+        DrlExprParser parser = new DrlExprParser( LanguageLevelOption.DRL6 );
+        ConstraintConnectiveDescr result = parser.parse( descr.getExpression() );
+        visit( result );
+    }
+
     protected void visit( final FactTemplateDescr descr ) {
         for ( FieldTemplateDescr d : descr.getFields() ) {
             visit( d );
@@ -227,6 +330,7 @@ public class PackageDescrIndexVisitor {
 
     protected void visit( final FieldAccessDescr descr ) {
         //TODO - Not yet implemented
+        System.out.println( context.getCurrentPattern() );
         System.out.println( descr + " : " + descr.getClass().getName() );
     }
 
@@ -239,6 +343,7 @@ public class PackageDescrIndexVisitor {
 
     protected void visit( final FieldTemplateDescr descr ) {
         //TODO - Not yet implemented
+        System.out.println( context.getCurrentPattern() );
         System.out.println( descr + " : " + descr.getClass().getName() );
     }
 
@@ -257,11 +362,13 @@ public class PackageDescrIndexVisitor {
 
     protected void visit( final FunctionDescr descr ) {
         //TODO - Not yet implemented
+        System.out.println( context.getCurrentPattern() );
         System.out.println( descr + " : " + descr.getClass().getName() );
     }
 
     protected void visit( final FunctionImportDescr descr ) {
         //TODO - Not yet implemented
+        System.out.println( context.getCurrentPattern() );
         System.out.println( descr + " : " + descr.getClass().getName() );
     }
 
@@ -276,16 +383,19 @@ public class PackageDescrIndexVisitor {
 
     protected void visit( final LiteralRestrictionDescr descr ) {
         //TODO - Not yet implemented
+        System.out.println( context.getCurrentPattern() );
         System.out.println( descr + " : " + descr.getClass().getName() );
     }
 
     protected void visit( final MethodAccessDescr descr ) {
         //TODO - Not yet implemented
+        System.out.println( context.getCurrentPattern() );
         System.out.println( descr + " : " + descr.getClass().getName() );
     }
 
     protected void visit( final MVELExprDescr descr ) {
         //TODO - Not yet implemented
+        System.out.println( context.getCurrentPattern() );
         System.out.println( descr + " : " + descr.getClass().getName() );
     }
 
@@ -312,13 +422,21 @@ public class PackageDescrIndexVisitor {
     }
 
     protected void visit( final PatternDescr descr ) {
-        builder.addType( new Type( getFullyQualifiedClassName( packageDescr,
-                                                               descr.getObjectType() ) ) );
+        context.startPattern( descr );
+        final String fullyQualifiedClassName = getFullyQualifiedClassName( packageDescr,
+                                                                           descr.getObjectType() );
+        if ( !( descr.getIdentifier() == null || descr.getIdentifier().isEmpty() ) ) {
+            context.addBoundType( descr.getIdentifier(),
+                                  fullyQualifiedClassName );
+        }
+        builder.addType( new Type( fullyQualifiedClassName ) );
         visit( descr.getConstraint() );
+        context.endPattern();
     }
 
     protected void visit( final PredicateDescr descr ) {
         //TODO - Not yet implemented
+        System.out.println( context.getCurrentPattern() );
         System.out.println( descr + " : " + descr.getClass().getName() );
     }
 
@@ -338,6 +456,15 @@ public class PackageDescrIndexVisitor {
             visit( d );
         }
         visit( descr.getLhs() );
+        visitConsequence( descr.getConsequence() );
+        for ( Object o : descr.getNamedConsequences().values() ) {
+            visitConsequence( o );
+        }
+    }
+
+    protected void visitConsequence( final Object consequence ) {
+        //TODO - Not yet implemented
+        System.out.println( consequence );
     }
 
     protected void visit( final StringConnectiveDescr descr ) {
@@ -357,6 +484,7 @@ public class PackageDescrIndexVisitor {
 
     protected void visit( final TypeFieldDescr descr ) {
         //TODO - Not yet implemented
+        System.out.println( context.getCurrentPattern() );
         System.out.println( descr + " : " + descr.getClass().getName() );
     }
 
