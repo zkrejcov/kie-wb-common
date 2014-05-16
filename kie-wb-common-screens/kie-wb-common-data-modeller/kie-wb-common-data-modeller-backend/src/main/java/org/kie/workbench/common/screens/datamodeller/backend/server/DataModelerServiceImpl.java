@@ -123,12 +123,6 @@ public class DataModelerServiceImpl implements DataModelerService {
     private LRUBuilderCache builderCache;
 
     @Inject
-    private Event<IncrementalBuildResults> incrementalBuildEvent;
-
-    @Inject
-    private Event<PublishBatchMessagesEvent> publishMessagesEvent;
-
-    @Inject
     private Event<PublishBatchMessagesEvent> publishBatchMessagesEvent;
 
     private static final String DEFAULT_COMMIT_MESSAGE = "Data modeller generated action.";
@@ -214,23 +208,7 @@ public class DataModelerServiceImpl implements DataModelerService {
             publishEvent.getMessagesToPublish().add( systemMessage );
         }
 
-        publishMessagesEvent.fire( publishEvent );
-
-        /*
-        IncrementalBuildResults buildResults = new IncrementalBuildResults( );
-        BuildMessage buildMessage;
-        for ( ModelDriverError error : result.getErrors()) {
-            buildMessage = new BuildMessage();
-            buildMessage.setLevel( BuildMessage.Level.ERROR );
-            buildMessage.setId( error.getId() );
-            buildMessage.setText( error.getMessage() );
-            buildMessage.setColumn( error.getColumn() );
-            buildMessage.setLine( error.getLine() );
-            buildMessage.setPath( Paths.convert( error.getFile() ) );
-            buildResults.addAddedMessage( buildMessage );
-        }
-        incrementalBuildEvent.fire( buildResults );
-        */
+        publishBatchMessagesEvent.fire( publishEvent );
     }
 
     @Override

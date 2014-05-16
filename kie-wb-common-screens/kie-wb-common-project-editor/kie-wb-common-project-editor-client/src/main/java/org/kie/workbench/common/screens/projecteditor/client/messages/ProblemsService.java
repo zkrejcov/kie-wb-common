@@ -141,7 +141,7 @@ public class ProblemsService {
         List<SystemMessage> newMessages = filterMessages( sessionId, userId, null, messages );
         List<ProblemsServiceRow> newRows = new ArrayList<ProblemsServiceRow>();
 
-        int index = ( place != null && place == PublishMessagesEvent.Place.TOP ) ? 0 : ( list != null && list.size() > 0 ? ( list.size() - 1 ) : 0 );
+        int index = ( place != null && place == PublishMessagesEvent.Place.TOP ) ? 0 : ( list != null && list.size() > 0 ? list.size() : 0 );
 
         for ( SystemMessage systemMessage : newMessages ) {
             newRows.add( new ProblemsServiceRow( sessionId, userId, systemMessage ) );
