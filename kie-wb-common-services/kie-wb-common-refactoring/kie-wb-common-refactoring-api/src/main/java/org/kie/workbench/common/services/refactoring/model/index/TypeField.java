@@ -18,35 +18,37 @@ package org.kie.workbench.common.services.refactoring.model.index;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.kie.workbench.common.services.refactoring.model.index.terms.FieldIndexTerm;
+import org.kie.workbench.common.services.refactoring.model.index.terms.TypeIndexTerm;
 import org.uberfire.commons.data.Pair;
 import org.uberfire.commons.validation.PortablePreconditions;
 
 public class TypeField implements IndexElementsGenerator {
 
-    private String name;
-    private String fullyQualifiedClassName;
-    private String parentClassFullQualifiedClassName;
+    private FieldIndexTerm fieldTerm;
+    private TypeIndexTerm fieldTypeTerm;
+    private TypeIndexTerm classTypeTerm;
 
-    public TypeField( final String name,
-                      final String fullyQualifiedClassName,
-                      final String parentClassFullQualifiedClassName ) {
-        this.name = PortablePreconditions.checkNotNull( "name",
-                                                        name );
-        this.fullyQualifiedClassName = PortablePreconditions.checkNotNull( "fullyQualifiedClassName",
-                                                                           fullyQualifiedClassName );
-        this.parentClassFullQualifiedClassName = PortablePreconditions.checkNotNull( "parentClassFullQualifiedClassName",
-                                                                                     parentClassFullQualifiedClassName );
+    public TypeField( final FieldIndexTerm fieldTerm,
+                      final TypeIndexTerm fieldTypeTerm,
+                      final TypeIndexTerm classTypeTerm ) {
+        this.fieldTerm = PortablePreconditions.checkNotNull( "fieldTerm",
+                                                             fieldTerm );
+        this.fieldTypeTerm = PortablePreconditions.checkNotNull( "fieldTypeTerm",
+                                                                 fieldTypeTerm );
+        this.classTypeTerm = PortablePreconditions.checkNotNull( "classTypeTerm",
+                                                                 classTypeTerm );
     }
 
     @Override
     public List<Pair<String, String>> toIndexElements() {
         final List<Pair<String, String>> indexElements = new ArrayList<Pair<String, String>>();
-        indexElements.add( new Pair<String, String>( IndexableElements.FIELD_TYPE_NAME.toString(),
-                                                     name ) );
-        indexElements.add( new Pair<String, String>( IndexableElements.FIELD_TYPE_FULLY_QUALIFIED_CLASS_NAME.toString(),
-                                                     fullyQualifiedClassName ) );
-        indexElements.add( new Pair<String, String>( IndexableElements.TYPE_NAME.toString() + ":" + parentClassFullQualifiedClassName + ":" + IndexableElements.FIELD_TYPE_NAME.toString(),
-                                                     name ) );
+        indexElements.add( new Pair<String, String>( fieldTerm.getTerm(),
+                                                     fieldTerm.getValue() ) );
+        indexElements.add( new Pair<String, String>( fieldTypeTerm.getTerm(),
+                                                     fieldTypeTerm.getValue() ) );
+        indexElements.add( new Pair<String, String>( classTypeTerm.getTerm() + ":" + classTypeTerm.getValue() + ":" + fieldTerm.getTerm(),
+                                                     fieldTerm.getValue() ) );
         return indexElements;
     }
 

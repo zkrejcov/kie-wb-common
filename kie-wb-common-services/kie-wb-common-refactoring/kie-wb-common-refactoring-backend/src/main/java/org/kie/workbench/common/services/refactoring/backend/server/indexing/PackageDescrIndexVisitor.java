@@ -68,6 +68,12 @@ import org.kie.workbench.common.services.refactoring.model.index.Rule;
 import org.kie.workbench.common.services.refactoring.model.index.RuleAttribute;
 import org.kie.workbench.common.services.refactoring.model.index.Type;
 import org.kie.workbench.common.services.refactoring.model.index.TypeField;
+import org.kie.workbench.common.services.refactoring.model.index.terms.FieldIndexTerm;
+import org.kie.workbench.common.services.refactoring.model.index.terms.ParentRuleIndexTerm;
+import org.kie.workbench.common.services.refactoring.model.index.terms.RuleAttributeIndexTerm;
+import org.kie.workbench.common.services.refactoring.model.index.terms.RuleAttributeValueIndexTerm;
+import org.kie.workbench.common.services.refactoring.model.index.terms.RuleIndexTerm;
+import org.kie.workbench.common.services.refactoring.model.index.terms.TypeIndexTerm;
 import org.uberfire.commons.data.Pair;
 import org.uberfire.commons.validation.PortablePreconditions;
 
@@ -238,10 +244,10 @@ public class PackageDescrIndexVisitor {
 
     protected void visit( final AtomicExprDescr descr ) {
         String expression = descr.getExpression();
-        parseExpression(expression);
+        parseExpression( expression );
     }
 
-    private String parseExpression(String expression) {
+    private String parseExpression( String expression ) {
         String factType = context.getCurrentPattern().getObjectType();
         String fullyQualifiedClassName = getFullyQualifiedClassName( packageDescr,
                                                                      factType );
@@ -262,7 +268,7 @@ public class PackageDescrIndexVisitor {
             }
         }
         return addField( expression,
-                  fullyQualifiedClassName );
+                         fullyQualifiedClassName );
     }
 
     private String addField( final String fieldName,
@@ -271,9 +277,9 @@ public class PackageDescrIndexVisitor {
         if ( mfs != null ) {
             for ( ModelField mf : mfs ) {
                 if ( mf.getName().equals( fieldName ) ) {
-                    builder.addField( new TypeField( fieldName,
-                                                     mf.getClassName(),
-                                                     fullyQualifiedClassName ) );
+                    builder.addField( new TypeField( new FieldIndexTerm( fieldName ),
+                                                     new TypeIndexTerm( mf.getClassName() ),
+                                                     new TypeIndexTerm( fullyQualifiedClassName ) ) );
                     return mf.getClassName();
                 }
             }
@@ -282,8 +288,8 @@ public class PackageDescrIndexVisitor {
     }
 
     protected void visit( final AttributeDescr descr ) {
-        builder.addRuleAttribute( new RuleAttribute( descr.getName(),
-                                                     descr.getValue() ) );
+        builder.addRuleAttribute( new RuleAttribute( new RuleAttributeIndexTerm( descr.getName() ),
+                                                     new RuleAttributeValueIndexTerm( descr.getValue() ) ) );
     }
 
     protected void visit( final BindingDescr descr ) {
@@ -291,7 +297,7 @@ public class PackageDescrIndexVisitor {
         final String identifier = descr.getVariable();
         final String fullyQualifiedClassName = parseExpression( descr.getExpression() );
         context.addBoundType( identifier,
-                              fullyQualifiedClassName);
+                              fullyQualifiedClassName );
         System.out.println( context.getCurrentPattern() );
         System.out.println( descr + " : " + descr.getClass().getName() );
     }
@@ -373,12 +379,12 @@ public class PackageDescrIndexVisitor {
     }
 
     protected void visit( final GlobalDescr descr ) {
-        builder.addType( new Type( getFullyQualifiedClassName( packageDescr,
-                                                               descr.getType() ) ) );
+        builder.addType( new Type( new TypeIndexTerm( getFullyQualifiedClassName( packageDescr,
+                                                                                  descr.getType() ) ) ) );
     }
 
     protected void visit( final ImportDescr descr ) {
-        builder.addType( new Type( descr.getTarget() ) );
+        builder.addType( new Type( new TypeIndexTerm( descr.getTarget() ) ) );
     }
 
     protected void visit( final LiteralRestrictionDescr descr ) {
@@ -429,7 +435,7 @@ public class PackageDescrIndexVisitor {
             context.addBoundType( descr.getIdentifier(),
                                   fullyQualifiedClassName );
         }
-        builder.addType( new Type( fullyQualifiedClassName ) );
+        builder.addType( new Type( new TypeIndexTerm( fullyQualifiedClassName ) ) );
         visit( descr.getConstraint() );
         context.endPattern();
     }
@@ -450,8 +456,8 @@ public class PackageDescrIndexVisitor {
     }
 
     protected void visit( final RuleDescr descr ) {
-        builder.addRule( new Rule( descr.getName(),
-                                   descr.getParentName() ) );
+        builder.addRule( new Rule( new RuleIndexTerm( descr.getName() ),
+                                   ( descr.getParentName() == null ? null : new ParentRuleIndexTerm( descr.getParentName() ) ) ) );
         for ( AttributeDescr d : descr.getAttributes().values() ) {
             visit( d );
         }
@@ -474,11 +480,11 @@ public class PackageDescrIndexVisitor {
     }
 
     protected void visit( final TypeDeclarationDescr descr ) {
-        builder.addType( new Type( getFullyQualifiedClassName( packageDescr,
-                                                               descr.getTypeName() ) ) );
+        builder.addType( new Type( new TypeIndexTerm( getFullyQualifiedClassName( packageDescr,
+                                                                                  descr.getTypeName() ) ) ) );
         if ( !( descr.getSuperTypeName() == null || descr.getSuperTypeName().isEmpty() ) ) {
-            builder.addType( new Type( getFullyQualifiedClassName( packageDescr,
-                                                                   descr.getSuperTypeName() ) ) );
+            builder.addType( new Type( new TypeIndexTerm( getFullyQualifiedClassName( packageDescr,
+                                                                                      descr.getSuperTypeName() ) ) ) );
         }
     }
 

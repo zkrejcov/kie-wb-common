@@ -23,16 +23,18 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.index.Term;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopScoreDocCollector;
 import org.junit.Test;
 import org.kie.workbench.common.services.refactoring.backend.server.BaseIndexingTest;
 import org.kie.workbench.common.services.refactoring.backend.server.TestIndexer;
 import org.kie.workbench.common.services.refactoring.backend.server.indexing.RuleAttributeNameAnalyzer;
-import org.kie.workbench.common.services.refactoring.model.index.IndexableElements;
+import org.kie.workbench.common.services.refactoring.backend.server.query.QueryBuilder;
+import org.kie.workbench.common.services.refactoring.model.index.terms.FieldIndexTerm;
+import org.kie.workbench.common.services.refactoring.model.index.terms.RuleAttributeIndexTerm;
+import org.kie.workbench.common.services.refactoring.model.index.terms.TypeIndexTerm;
 import org.uberfire.java.nio.file.Path;
 import org.uberfire.metadata.backend.lucene.index.LuceneIndex;
 import org.uberfire.metadata.backend.lucene.util.KObjectUtil;
@@ -65,9 +67,9 @@ public class IndexDrlLHSTypeExpressionField3Test extends BaseIndexingTest<TestDr
             final IndexSearcher searcher = ( (LuceneIndex) index ).nrtSearcher();
             final TopScoreDocCollector collector = TopScoreDocCollector.create( 10,
                                                                                 true );
+            final Query query = new QueryBuilder().addTerm( new TypeIndexTerm( "org.kie.workbench.common.services.refactoring.backend.server.drl.classes.Applicant" ) ).build();
 
-            searcher.search( new TermQuery( new Term( IndexableElements.TYPE_NAME.toString(),
-                                                      "org.kie.workbench.common.services.refactoring.backend.server.drl.classes.applicant" ) ),
+            searcher.search( query,
                              collector );
             final ScoreDoc[] hits = collector.topDocs().scoreDocs;
             assertEquals( 1,
@@ -87,9 +89,9 @@ public class IndexDrlLHSTypeExpressionField3Test extends BaseIndexingTest<TestDr
             final IndexSearcher searcher = ( (LuceneIndex) index ).nrtSearcher();
             final TopScoreDocCollector collector = TopScoreDocCollector.create( 10,
                                                                                 true );
+            final Query query = new QueryBuilder().addTerm( new TypeIndexTerm( "org.kie.workbench.common.services.refactoring.backend.server.drl.classes.Mortgage" ) ).build();
 
-            searcher.search( new TermQuery( new Term( IndexableElements.TYPE_NAME.toString(),
-                                                      "org.kie.workbench.common.services.refactoring.backend.server.drl.classes.mortgage" ) ),
+            searcher.search( query,
                              collector );
             final ScoreDoc[] hits = collector.topDocs().scoreDocs;
             assertEquals( 1,
@@ -109,9 +111,9 @@ public class IndexDrlLHSTypeExpressionField3Test extends BaseIndexingTest<TestDr
             final IndexSearcher searcher = ( (LuceneIndex) index ).nrtSearcher();
             final TopScoreDocCollector collector = TopScoreDocCollector.create( 10,
                                                                                 true );
+            final Query query = new QueryBuilder().addTerm( new TypeIndexTerm( "org.kie.workbench.common.services.refactoring.backend.server.drl.classes.Mortgage" ) ).addTerm( new FieldIndexTerm( "applicant" ) ).build();
 
-            searcher.search( new TermQuery( new Term( IndexableElements.TYPE_NAME.toString() + ":org.kie.workbench.common.services.refactoring.backend.server.drl.classes.Mortgage:" + IndexableElements.FIELD_TYPE_NAME.toString(),
-                                                      "applicant" ) ),
+            searcher.search( query,
                              collector );
             final ScoreDoc[] hits = collector.topDocs().scoreDocs;
             assertEquals( 0,
@@ -124,9 +126,9 @@ public class IndexDrlLHSTypeExpressionField3Test extends BaseIndexingTest<TestDr
             final IndexSearcher searcher = ( (LuceneIndex) index ).nrtSearcher();
             final TopScoreDocCollector collector = TopScoreDocCollector.create( 10,
                                                                                 true );
+            final Query query = new QueryBuilder().addTerm( new TypeIndexTerm( "org.kie.workbench.common.services.refactoring.backend.server.drl.classes.Applicant" ) ).addTerm( new FieldIndexTerm( "age" ) ).build();
 
-            searcher.search( new TermQuery( new Term( IndexableElements.TYPE_NAME.toString() + ":org.kie.workbench.common.services.refactoring.backend.server.drl.classes.Applicant:" + IndexableElements.FIELD_TYPE_NAME.toString(),
-                                                      "age" ) ),
+            searcher.search( query,
                              collector );
             final ScoreDoc[] hits = collector.topDocs().scoreDocs;
             assertEquals( 1,
@@ -152,7 +154,7 @@ public class IndexDrlLHSTypeExpressionField3Test extends BaseIndexingTest<TestDr
     @Override
     public Map<String, Analyzer> getAnalyzers() {
         return new HashMap<String, Analyzer>() {{
-            put( IndexableElements.RULE_ATTRIBUTE_NAME.toString(),
+            put( RuleAttributeIndexTerm.TERM,
                  new RuleAttributeNameAnalyzer( LUCENE_40 ) );
         }};
     }

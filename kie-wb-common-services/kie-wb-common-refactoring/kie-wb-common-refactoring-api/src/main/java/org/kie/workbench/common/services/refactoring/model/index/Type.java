@@ -18,27 +18,28 @@ package org.kie.workbench.common.services.refactoring.model.index;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.kie.workbench.common.services.refactoring.model.index.terms.TypeIndexTerm;
 import org.uberfire.commons.data.Pair;
 import org.uberfire.commons.validation.PortablePreconditions;
 
 public class Type implements IndexElementsGenerator {
 
-    private String fullyQualifiedClassName;
+    private TypeIndexTerm typeTerm;
 
-    public Type( final String fullyQualifiedClassName ) {
-        this.fullyQualifiedClassName = PortablePreconditions.checkNotNull( "fullyQualifiedClassName",
-                                                                           fullyQualifiedClassName );
+    public Type( final TypeIndexTerm typeTerm ) {
+        this.typeTerm = PortablePreconditions.checkNotNull( "typeTerm",
+                                                            typeTerm );
     }
 
-    public String getFullyQualifiedClassName() {
-        return fullyQualifiedClassName;
+    public TypeIndexTerm getTypeTerm() {
+        return typeTerm;
     }
 
     @Override
     public List<Pair<String, String>> toIndexElements() {
         final List<Pair<String, String>> indexElements = new ArrayList<Pair<String, String>>();
-        indexElements.add( new Pair<String, String>( IndexableElements.TYPE_NAME.toString(),
-                                                     fullyQualifiedClassName ) );
+        indexElements.add( new Pair<String, String>( typeTerm.getTerm(),
+                                                     typeTerm.getValue() ) );
         return indexElements;
     }
 

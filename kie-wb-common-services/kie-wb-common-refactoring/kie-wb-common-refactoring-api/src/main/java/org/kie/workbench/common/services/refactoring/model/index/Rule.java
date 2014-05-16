@@ -18,38 +18,40 @@ package org.kie.workbench.common.services.refactoring.model.index;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.kie.workbench.common.services.refactoring.model.index.terms.ParentRuleIndexTerm;
+import org.kie.workbench.common.services.refactoring.model.index.terms.RuleIndexTerm;
 import org.uberfire.commons.data.Pair;
 import org.uberfire.commons.validation.PortablePreconditions;
 
 public class Rule implements IndexElementsGenerator {
 
-    private String name;
-    private String parentName;
+    private RuleIndexTerm ruleTerm;
+    private ParentRuleIndexTerm parentRuleTerm;
 
-    public Rule( final String name ) {
-        this( name,
+    public Rule( final RuleIndexTerm rule ) {
+        this( rule,
               null );
     }
 
-    public Rule( final String name,
-                 final String parentName ) {
-        this.name = PortablePreconditions.checkNotNull( "name",
-                                                        name );
-        this.parentName = parentName;
+    public Rule( final RuleIndexTerm ruleTerm,
+                 final ParentRuleIndexTerm parentRuleTerm ) {
+        this.ruleTerm = PortablePreconditions.checkNotNull( "ruleTerm",
+                                                            ruleTerm );
+        this.parentRuleTerm = parentRuleTerm;
     }
 
-    public String getName() {
-        return name;
+    public RuleIndexTerm getRule() {
+        return ruleTerm;
     }
 
     @Override
     public List<Pair<String, String>> toIndexElements() {
         final List<Pair<String, String>> indexElements = new ArrayList<Pair<String, String>>();
-        indexElements.add( new Pair<String, String>( IndexableElements.RULE_NAME.toString(),
-                                                     name ) );
-        if ( parentName != null ) {
-            indexElements.add( new Pair<String, String>( IndexableElements.RULE_NAME_PARENT.toString(),
-                                                         parentName ) );
+        indexElements.add( new Pair<String, String>( ruleTerm.getTerm(),
+                                                     ruleTerm.getValue() ) );
+        if ( parentRuleTerm != null ) {
+            indexElements.add( new Pair<String, String>( parentRuleTerm.getTerm(),
+                                                         parentRuleTerm.getValue() ) );
         }
         return indexElements;
     }

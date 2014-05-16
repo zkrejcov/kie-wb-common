@@ -13,20 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.kie.workbench.common.services.refactoring.model.index;
+package org.kie.workbench.common.services.refactoring.model.index.terms;
 
-public enum IndexableElements {
+import org.uberfire.commons.validation.PortablePreconditions;
 
-    RULE_NAME,
-    RULE_NAME_PARENT,
-    RULE_ATTRIBUTE_NAME,
-    RULE_ATTRIBUTE_VALUE,
-    TYPE_NAME,
-    FIELD_TYPE_NAME,
-    FIELD_TYPE_FULLY_QUALIFIED_CLASS_NAME;
+public class RuleIndexTerm implements IndexTerm {
+
+    public static final String TERM = "rule_name";
+
+    private final String ruleName;
+
+    public RuleIndexTerm( final String ruleName ) {
+        this.ruleName = PortablePreconditions.checkNotNull( "ruleName",
+                                                            ruleName );
+    }
 
     @Override
-    public String toString() {
-        return super.name().toLowerCase();
+    public String getTerm() {
+        return TERM;
     }
+
+    @Override
+    public String getValue() {
+        return ruleName;
+    }
+
 }

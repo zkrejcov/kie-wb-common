@@ -18,31 +18,33 @@ package org.kie.workbench.common.services.refactoring.model.index;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.kie.workbench.common.services.refactoring.model.index.terms.RuleAttributeIndexTerm;
+import org.kie.workbench.common.services.refactoring.model.index.terms.RuleAttributeValueIndexTerm;
 import org.uberfire.commons.data.Pair;
 import org.uberfire.commons.validation.PortablePreconditions;
 
 public class RuleAttribute implements IndexElementsGenerator {
 
-    private String name;
-    private String value;
+    private RuleAttributeIndexTerm attributeNameTerm;
+    private RuleAttributeValueIndexTerm attributeValueTerm;
 
-    public RuleAttribute( final String name,
-                          final String value ) {
-        this.name = PortablePreconditions.checkNotNull( "name",
-                                                        name );
-        this.value = PortablePreconditions.checkNotNull( "value",
-                                                         value );
+    public RuleAttribute( final RuleAttributeIndexTerm attributeNameTerm,
+                          final RuleAttributeValueIndexTerm attributeValueTerm ) {
+        this.attributeNameTerm = PortablePreconditions.checkNotNull( "attributeNameTerm",
+                                                                     attributeNameTerm );
+        this.attributeValueTerm = PortablePreconditions.checkNotNull( "attributeValueTerm",
+                                                                      attributeValueTerm );
     }
 
     @Override
     public List<Pair<String, String>> toIndexElements() {
         final List<Pair<String, String>> indexElements = new ArrayList<Pair<String, String>>();
-        indexElements.add( new Pair<String, String>( IndexableElements.RULE_ATTRIBUTE_NAME.toString(),
-                                                     name ) );
-        indexElements.add( new Pair<String, String>( IndexableElements.RULE_ATTRIBUTE_VALUE.toString(),
-                                                     value ) );
-        indexElements.add( new Pair<String, String>( IndexableElements.RULE_ATTRIBUTE_NAME.toString() + ":" + name + ":" + IndexableElements.RULE_ATTRIBUTE_VALUE.toString(),
-                                                     value ) );
+        indexElements.add( new Pair<String, String>( attributeNameTerm.getTerm(),
+                                                     attributeNameTerm.getValue() ) );
+        indexElements.add( new Pair<String, String>( attributeValueTerm.getTerm(),
+                                                     attributeValueTerm.getValue() ) );
+        indexElements.add( new Pair<String, String>( attributeNameTerm.getTerm() + ":" + attributeNameTerm.getValue() + ":" + attributeValueTerm.getTerm(),
+                                                     attributeValueTerm.getValue() ) );
         return indexElements;
     }
 
