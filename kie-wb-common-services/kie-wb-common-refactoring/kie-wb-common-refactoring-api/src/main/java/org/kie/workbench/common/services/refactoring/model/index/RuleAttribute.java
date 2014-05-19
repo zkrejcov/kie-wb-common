@@ -18,18 +18,18 @@ package org.kie.workbench.common.services.refactoring.model.index;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.kie.workbench.common.services.refactoring.model.index.terms.RuleAttributeIndexTerm;
-import org.kie.workbench.common.services.refactoring.model.index.terms.RuleAttributeValueIndexTerm;
+import org.kie.workbench.common.services.refactoring.model.index.terms.valueterms.ValueRuleAttributeIndexTerm;
+import org.kie.workbench.common.services.refactoring.model.index.terms.valueterms.ValueRuleAttributeValueIndexTerm;
 import org.uberfire.commons.data.Pair;
 import org.uberfire.commons.validation.PortablePreconditions;
 
 public class RuleAttribute implements IndexElementsGenerator {
 
-    private RuleAttributeIndexTerm attributeNameTerm;
-    private RuleAttributeValueIndexTerm attributeValueTerm;
+    private ValueRuleAttributeIndexTerm attributeNameTerm;
+    private ValueRuleAttributeValueIndexTerm attributeValueTerm;
 
-    public RuleAttribute( final RuleAttributeIndexTerm attributeNameTerm,
-                          final RuleAttributeValueIndexTerm attributeValueTerm ) {
+    public RuleAttribute( final ValueRuleAttributeIndexTerm attributeNameTerm,
+                          final ValueRuleAttributeValueIndexTerm attributeValueTerm ) {
         this.attributeNameTerm = PortablePreconditions.checkNotNull( "attributeNameTerm",
                                                                      attributeNameTerm );
         this.attributeValueTerm = PortablePreconditions.checkNotNull( "attributeValueTerm",

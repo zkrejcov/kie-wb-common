@@ -19,6 +19,4 @@ public interface IndexTerm {
 
     String getTerm();
 
-    String getValue();
-
 }

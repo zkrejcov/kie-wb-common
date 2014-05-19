@@ -15,27 +15,16 @@
  */
 package org.kie.workbench.common.services.refactoring.model.index.terms;
 
-import org.uberfire.commons.validation.PortablePreconditions;
+import org.jboss.errai.common.client.api.annotations.Portable;
 
+@Portable
 public class RuleAttributeIndexTerm implements IndexTerm {
 
     public static final String TERM = "rule_attribute";
 
-    private final String attributeName;
-
-    public RuleAttributeIndexTerm( final String attributeName ) {
-        this.attributeName = PortablePreconditions.checkNotNull( "attributeName",
-                                                                 attributeName );
-    }
-
     @Override
     public String getTerm() {
         return TERM;
-    }
-
-    @Override
-    public String getValue() {
-        return attributeName;
     }
 
 }

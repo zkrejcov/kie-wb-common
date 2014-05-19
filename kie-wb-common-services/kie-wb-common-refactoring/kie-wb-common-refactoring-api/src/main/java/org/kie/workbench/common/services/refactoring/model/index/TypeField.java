@@ -18,20 +18,20 @@ package org.kie.workbench.common.services.refactoring.model.index;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.kie.workbench.common.services.refactoring.model.index.terms.FieldIndexTerm;
-import org.kie.workbench.common.services.refactoring.model.index.terms.TypeIndexTerm;
+import org.kie.workbench.common.services.refactoring.model.index.terms.valueterms.ValueFieldIndexTerm;
+import org.kie.workbench.common.services.refactoring.model.index.terms.valueterms.ValueTypeIndexTerm;
 import org.uberfire.commons.data.Pair;
 import org.uberfire.commons.validation.PortablePreconditions;
 
 public class TypeField implements IndexElementsGenerator {
 
-    private FieldIndexTerm fieldTerm;
-    private TypeIndexTerm fieldTypeTerm;
-    private TypeIndexTerm classTypeTerm;
+    private ValueFieldIndexTerm fieldTerm;
+    private ValueTypeIndexTerm fieldTypeTerm;
+    private ValueTypeIndexTerm classTypeTerm;
 
-    public TypeField( final FieldIndexTerm fieldTerm,
-                      final TypeIndexTerm fieldTypeTerm,
-                      final TypeIndexTerm classTypeTerm ) {
+    public TypeField( final ValueFieldIndexTerm fieldTerm,
+                      final ValueTypeIndexTerm fieldTypeTerm,
+                      final ValueTypeIndexTerm classTypeTerm ) {
         this.fieldTerm = PortablePreconditions.checkNotNull( "fieldTerm",
                                                              fieldTerm );
         this.fieldTypeTerm = PortablePreconditions.checkNotNull( "fieldTypeTerm",

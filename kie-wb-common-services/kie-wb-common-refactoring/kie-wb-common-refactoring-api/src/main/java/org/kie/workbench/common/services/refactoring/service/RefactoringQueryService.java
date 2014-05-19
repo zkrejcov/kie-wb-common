@@ -15,14 +15,21 @@
  */
 package org.kie.workbench.common.services.refactoring.service;
 
+import java.util.Set;
+
 import org.jboss.errai.bus.server.annotations.Remote;
+import org.kie.workbench.common.services.refactoring.model.index.terms.IndexTerm;
+import org.kie.workbench.common.services.refactoring.model.query.RefactoringPageRequest;
 import org.kie.workbench.common.services.refactoring.model.query.RefactoringPageRow;
-import org.kie.workbench.common.services.refactoring.model.query.RefactoringTermPageRequest;
 import org.uberfire.paging.PageResponse;
 
 @Remote
-public interface RefactoringSearchService {
+public interface RefactoringQueryService {
 
-    PageResponse<RefactoringPageRow> query( final RefactoringTermPageRequest request );
+    Set<String> getQueries();
+
+    Set<IndexTerm> getTerms( final String queryName );
+
+    PageResponse<RefactoringPageRow> query( final RefactoringPageRequest request );
 
 }

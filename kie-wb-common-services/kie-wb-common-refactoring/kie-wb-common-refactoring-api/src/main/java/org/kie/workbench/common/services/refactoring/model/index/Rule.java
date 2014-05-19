@@ -18,29 +18,29 @@ package org.kie.workbench.common.services.refactoring.model.index;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.kie.workbench.common.services.refactoring.model.index.terms.ParentRuleIndexTerm;
-import org.kie.workbench.common.services.refactoring.model.index.terms.RuleIndexTerm;
+import org.kie.workbench.common.services.refactoring.model.index.terms.valueterms.ValueParentRuleIndexTerm;
+import org.kie.workbench.common.services.refactoring.model.index.terms.valueterms.ValueRuleIndexTerm;
 import org.uberfire.commons.data.Pair;
 import org.uberfire.commons.validation.PortablePreconditions;
 
 public class Rule implements IndexElementsGenerator {
 
-    private RuleIndexTerm ruleTerm;
-    private ParentRuleIndexTerm parentRuleTerm;
+    private ValueRuleIndexTerm ruleTerm;
+    private ValueParentRuleIndexTerm parentRuleTerm;
 
-    public Rule( final RuleIndexTerm rule ) {
+    public Rule( final ValueRuleIndexTerm rule ) {
         this( rule,
               null );
     }
 
-    public Rule( final RuleIndexTerm ruleTerm,
-                 final ParentRuleIndexTerm parentRuleTerm ) {
+    public Rule( final ValueRuleIndexTerm ruleTerm,
+                 final ValueParentRuleIndexTerm parentRuleTerm ) {
         this.ruleTerm = PortablePreconditions.checkNotNull( "ruleTerm",
                                                             ruleTerm );
         this.parentRuleTerm = parentRuleTerm;
     }
 
-    public RuleIndexTerm getRule() {
+    public ValueRuleIndexTerm getRule() {
         return ruleTerm;
     }
 

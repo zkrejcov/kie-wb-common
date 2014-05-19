@@ -13,18 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.kie.workbench.common.services.refactoring.model.index.terms;
+package org.kie.workbench.common.services.refactoring.model.index.terms.valueterms;
 
 import org.jboss.errai.common.client.api.annotations.Portable;
+import org.kie.workbench.common.services.refactoring.model.index.terms.FieldIndexTerm;
+import org.uberfire.commons.validation.PortablePreconditions;
 
 @Portable
-public class FieldIndexTerm implements IndexTerm {
+public class ValueFieldIndexTerm extends FieldIndexTerm implements ValueIndexTerm {
 
-    public static final String TERM = "field";
+    private final String fieldName;
+
+    public ValueFieldIndexTerm( final String fieldName ) {
+        this.fieldName = PortablePreconditions.checkNotNull( "fieldName",
+                                                             fieldName );
+    }
 
     @Override
-    public String getTerm() {
-        return TERM;
+    public String getValue() {
+        return fieldName;
     }
 
 }

@@ -25,6 +25,7 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.WildcardQuery;
 import org.kie.workbench.common.services.refactoring.model.index.terms.IndexTerm;
+import org.kie.workbench.common.services.refactoring.model.index.terms.valueterms.ValueIndexTerm;
 
 /**
  * Simple query builder that supports AND between terms
@@ -32,9 +33,9 @@ import org.kie.workbench.common.services.refactoring.model.index.terms.IndexTerm
 public class QueryBuilder {
 
     private boolean useWildcards = false;
-    private final List<IndexTerm> terms = new ArrayList<IndexTerm>();
+    private final List<ValueIndexTerm> terms = new ArrayList<ValueIndexTerm>();
 
-    public QueryBuilder addTerm( final IndexTerm term ) {
+    public QueryBuilder addTerm( final ValueIndexTerm term ) {
         terms.add( term );
         return this;
     }
@@ -73,7 +74,7 @@ public class QueryBuilder {
     private String buildField() {
         final StringBuilder sb = new StringBuilder();
         for ( int i = 0; i < terms.size() - 1; i++ ) {
-            final IndexTerm term = terms.get( i );
+            final ValueIndexTerm term = terms.get( i );
             sb.append( term.getTerm() ).append( ":" ).append( term.getValue() ).append( ":" );
         }
         final IndexTerm term = terms.get( terms.size() - 1 );
@@ -82,7 +83,7 @@ public class QueryBuilder {
     }
 
     private String buildText() {
-        final IndexTerm term = terms.get( terms.size() - 1 );
+        final ValueIndexTerm term = terms.get( terms.size() - 1 );
         return term.getValue().toLowerCase();
     }
 

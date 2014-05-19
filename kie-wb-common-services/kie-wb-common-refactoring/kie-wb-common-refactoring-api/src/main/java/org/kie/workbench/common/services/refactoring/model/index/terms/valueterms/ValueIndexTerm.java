@@ -13,18 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.kie.workbench.common.services.refactoring.model.index.terms;
+package org.kie.workbench.common.services.refactoring.model.index.terms.valueterms;
 
-import org.jboss.errai.common.client.api.annotations.Portable;
+import org.kie.workbench.common.services.refactoring.model.index.terms.IndexTerm;
 
-@Portable
-public class FieldIndexTerm implements IndexTerm {
+public interface ValueIndexTerm extends IndexTerm {
 
-    public static final String TERM = "field";
-
-    @Override
-    public String getTerm() {
-        return TERM;
-    }
+    String getValue();
 
 }

@@ -20,6 +20,7 @@ import java.util.Map;
 
 import org.jboss.errai.common.client.api.annotations.Portable;
 import org.uberfire.backend.vfs.Path;
+import org.uberfire.commons.validation.PortablePreconditions;
 import org.uberfire.paging.AbstractPathPageRow;
 
 /**
@@ -28,7 +29,7 @@ import org.uberfire.paging.AbstractPathPageRow;
 @Portable
 public class RefactoringPageRow extends AbstractPathPageRow {
 
-    final Map<String, String> properties = new HashMap<String, String>();
+    final Map<String, String> terms = new HashMap<String, String>();
 
     public RefactoringPageRow() {
         super();
@@ -38,14 +39,16 @@ public class RefactoringPageRow extends AbstractPathPageRow {
         super( path );
     }
 
-    public void addProperty( final String name,
-                             final String value ) {
-        properties.put( name,
-                        value );
+    public void addTerm( final String term,
+                         final String value ) {
+        this.terms.put( PortablePreconditions.checkNotNull( "term",
+                                                            term ),
+                        PortablePreconditions.checkNotNull( "value",
+                                                            value ) );
     }
 
-    public Map<String, String> getProperties() {
-        return properties;
+    public Map<String, String> getTerms() {
+        return terms;
     }
 
 }

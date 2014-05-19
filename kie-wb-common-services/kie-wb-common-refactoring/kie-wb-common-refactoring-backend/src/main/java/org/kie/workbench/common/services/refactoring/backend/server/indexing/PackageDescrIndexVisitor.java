@@ -68,12 +68,12 @@ import org.kie.workbench.common.services.refactoring.model.index.Rule;
 import org.kie.workbench.common.services.refactoring.model.index.RuleAttribute;
 import org.kie.workbench.common.services.refactoring.model.index.Type;
 import org.kie.workbench.common.services.refactoring.model.index.TypeField;
-import org.kie.workbench.common.services.refactoring.model.index.terms.FieldIndexTerm;
-import org.kie.workbench.common.services.refactoring.model.index.terms.ParentRuleIndexTerm;
-import org.kie.workbench.common.services.refactoring.model.index.terms.RuleAttributeIndexTerm;
-import org.kie.workbench.common.services.refactoring.model.index.terms.RuleAttributeValueIndexTerm;
-import org.kie.workbench.common.services.refactoring.model.index.terms.RuleIndexTerm;
-import org.kie.workbench.common.services.refactoring.model.index.terms.TypeIndexTerm;
+import org.kie.workbench.common.services.refactoring.model.index.terms.valueterms.ValueFieldIndexTerm;
+import org.kie.workbench.common.services.refactoring.model.index.terms.valueterms.ValueParentRuleIndexTerm;
+import org.kie.workbench.common.services.refactoring.model.index.terms.valueterms.ValueRuleAttributeIndexTerm;
+import org.kie.workbench.common.services.refactoring.model.index.terms.valueterms.ValueRuleAttributeValueIndexTerm;
+import org.kie.workbench.common.services.refactoring.model.index.terms.valueterms.ValueRuleIndexTerm;
+import org.kie.workbench.common.services.refactoring.model.index.terms.valueterms.ValueTypeIndexTerm;
 import org.uberfire.commons.data.Pair;
 import org.uberfire.commons.validation.PortablePreconditions;
 
@@ -226,8 +226,6 @@ public class PackageDescrIndexVisitor {
 
     protected void visit( final ActionDescr descr ) {
         //TODO - Not yet implemented
-        System.out.println( context.getCurrentPattern() );
-        System.out.println( descr + " : " + descr.getClass().getName() );
     }
 
     protected void visit( final AndDescr descr ) {
@@ -238,8 +236,6 @@ public class PackageDescrIndexVisitor {
 
     protected void visit( final AnnotationDescr descr ) {
         //TODO - Not yet implemented
-        System.out.println( context.getCurrentPattern() );
-        System.out.println( descr + " : " + descr.getClass().getName() );
     }
 
     protected void visit( final AtomicExprDescr descr ) {
@@ -277,9 +273,9 @@ public class PackageDescrIndexVisitor {
         if ( mfs != null ) {
             for ( ModelField mf : mfs ) {
                 if ( mf.getName().equals( fieldName ) ) {
-                    builder.addField( new TypeField( new FieldIndexTerm( fieldName ),
-                                                     new TypeIndexTerm( mf.getClassName() ),
-                                                     new TypeIndexTerm( fullyQualifiedClassName ) ) );
+                    builder.addField( new TypeField( new ValueFieldIndexTerm( fieldName ),
+                                                     new ValueTypeIndexTerm( mf.getClassName() ),
+                                                     new ValueTypeIndexTerm( fullyQualifiedClassName ) ) );
                     return mf.getClassName();
                 }
             }
@@ -288,18 +284,15 @@ public class PackageDescrIndexVisitor {
     }
 
     protected void visit( final AttributeDescr descr ) {
-        builder.addRuleAttribute( new RuleAttribute( new RuleAttributeIndexTerm( descr.getName() ),
-                                                     new RuleAttributeValueIndexTerm( descr.getValue() ) ) );
+        builder.addRuleAttribute( new RuleAttribute( new ValueRuleAttributeIndexTerm( descr.getName() ),
+                                                     new ValueRuleAttributeValueIndexTerm( descr.getValue() ) ) );
     }
 
     protected void visit( final BindingDescr descr ) {
-        //TODO - Not yet implemented
         final String identifier = descr.getVariable();
         final String fullyQualifiedClassName = parseExpression( descr.getExpression() );
         context.addBoundType( identifier,
                               fullyQualifiedClassName );
-        System.out.println( context.getCurrentPattern() );
-        System.out.println( descr + " : " + descr.getClass().getName() );
     }
 
     protected void visit( final CollectDescr descr ) {
@@ -336,8 +329,6 @@ public class PackageDescrIndexVisitor {
 
     protected void visit( final FieldAccessDescr descr ) {
         //TODO - Not yet implemented
-        System.out.println( context.getCurrentPattern() );
-        System.out.println( descr + " : " + descr.getClass().getName() );
     }
 
     protected void visit( final FieldConstraintDescr descr ) {
@@ -349,8 +340,6 @@ public class PackageDescrIndexVisitor {
 
     protected void visit( final FieldTemplateDescr descr ) {
         //TODO - Not yet implemented
-        System.out.println( context.getCurrentPattern() );
-        System.out.println( descr + " : " + descr.getClass().getName() );
     }
 
     protected void visit( final ForallDescr descr ) {
@@ -368,41 +357,31 @@ public class PackageDescrIndexVisitor {
 
     protected void visit( final FunctionDescr descr ) {
         //TODO - Not yet implemented
-        System.out.println( context.getCurrentPattern() );
-        System.out.println( descr + " : " + descr.getClass().getName() );
     }
 
     protected void visit( final FunctionImportDescr descr ) {
         //TODO - Not yet implemented
-        System.out.println( context.getCurrentPattern() );
-        System.out.println( descr + " : " + descr.getClass().getName() );
     }
 
     protected void visit( final GlobalDescr descr ) {
-        builder.addType( new Type( new TypeIndexTerm( getFullyQualifiedClassName( packageDescr,
-                                                                                  descr.getType() ) ) ) );
+        builder.addType( new Type( new ValueTypeIndexTerm( getFullyQualifiedClassName( packageDescr,
+                                                                                       descr.getType() ) ) ) );
     }
 
     protected void visit( final ImportDescr descr ) {
-        builder.addType( new Type( new TypeIndexTerm( descr.getTarget() ) ) );
+        builder.addType( new Type( new ValueTypeIndexTerm( descr.getTarget() ) ) );
     }
 
     protected void visit( final LiteralRestrictionDescr descr ) {
         //TODO - Not yet implemented
-        System.out.println( context.getCurrentPattern() );
-        System.out.println( descr + " : " + descr.getClass().getName() );
     }
 
     protected void visit( final MethodAccessDescr descr ) {
         //TODO - Not yet implemented
-        System.out.println( context.getCurrentPattern() );
-        System.out.println( descr + " : " + descr.getClass().getName() );
     }
 
     protected void visit( final MVELExprDescr descr ) {
         //TODO - Not yet implemented
-        System.out.println( context.getCurrentPattern() );
-        System.out.println( descr + " : " + descr.getClass().getName() );
     }
 
     protected void visit( final NotDescr descr ) {
@@ -435,15 +414,13 @@ public class PackageDescrIndexVisitor {
             context.addBoundType( descr.getIdentifier(),
                                   fullyQualifiedClassName );
         }
-        builder.addType( new Type( new TypeIndexTerm( fullyQualifiedClassName ) ) );
+        builder.addType( new Type( new ValueTypeIndexTerm( fullyQualifiedClassName ) ) );
         visit( descr.getConstraint() );
         context.endPattern();
     }
 
     protected void visit( final PredicateDescr descr ) {
         //TODO - Not yet implemented
-        System.out.println( context.getCurrentPattern() );
-        System.out.println( descr + " : " + descr.getClass().getName() );
     }
 
     protected void visit( final QueryDescr descr ) {
@@ -456,8 +433,8 @@ public class PackageDescrIndexVisitor {
     }
 
     protected void visit( final RuleDescr descr ) {
-        builder.addRule( new Rule( new RuleIndexTerm( descr.getName() ),
-                                   ( descr.getParentName() == null ? null : new ParentRuleIndexTerm( descr.getParentName() ) ) ) );
+        builder.addRule( new Rule( new ValueRuleIndexTerm( descr.getName() ),
+                                   ( descr.getParentName() == null ? null : new ValueParentRuleIndexTerm( descr.getParentName() ) ) ) );
         for ( AttributeDescr d : descr.getAttributes().values() ) {
             visit( d );
         }
@@ -470,7 +447,6 @@ public class PackageDescrIndexVisitor {
 
     protected void visitConsequence( final Object consequence ) {
         //TODO - Not yet implemented
-        System.out.println( consequence );
     }
 
     protected void visit( final StringConnectiveDescr descr ) {
@@ -480,18 +456,16 @@ public class PackageDescrIndexVisitor {
     }
 
     protected void visit( final TypeDeclarationDescr descr ) {
-        builder.addType( new Type( new TypeIndexTerm( getFullyQualifiedClassName( packageDescr,
-                                                                                  descr.getTypeName() ) ) ) );
+        builder.addType( new Type( new ValueTypeIndexTerm( getFullyQualifiedClassName( packageDescr,
+                                                                                       descr.getTypeName() ) ) ) );
         if ( !( descr.getSuperTypeName() == null || descr.getSuperTypeName().isEmpty() ) ) {
-            builder.addType( new Type( new TypeIndexTerm( getFullyQualifiedClassName( packageDescr,
-                                                                                      descr.getSuperTypeName() ) ) ) );
+            builder.addType( new Type( new ValueTypeIndexTerm( getFullyQualifiedClassName( packageDescr,
+                                                                                           descr.getSuperTypeName() ) ) ) );
         }
     }
 
     protected void visit( final TypeFieldDescr descr ) {
         //TODO - Not yet implemented
-        System.out.println( context.getCurrentPattern() );
-        System.out.println( descr + " : " + descr.getClass().getName() );
     }
 
     protected void visit( final WindowDeclarationDescr descr ) {

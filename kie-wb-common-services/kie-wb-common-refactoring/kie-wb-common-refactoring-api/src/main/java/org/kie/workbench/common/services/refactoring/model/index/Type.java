@@ -18,20 +18,20 @@ package org.kie.workbench.common.services.refactoring.model.index;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.kie.workbench.common.services.refactoring.model.index.terms.TypeIndexTerm;
+import org.kie.workbench.common.services.refactoring.model.index.terms.valueterms.ValueTypeIndexTerm;
 import org.uberfire.commons.data.Pair;
 import org.uberfire.commons.validation.PortablePreconditions;
 
 public class Type implements IndexElementsGenerator {
 
-    private TypeIndexTerm typeTerm;
+    private ValueTypeIndexTerm typeTerm;
 
-    public Type( final TypeIndexTerm typeTerm ) {
+    public Type( final ValueTypeIndexTerm typeTerm ) {
         this.typeTerm = PortablePreconditions.checkNotNull( "typeTerm",
                                                             typeTerm );
     }
 
-    public TypeIndexTerm getTypeTerm() {
+    public ValueTypeIndexTerm getTypeTerm() {
         return typeTerm;
     }
 

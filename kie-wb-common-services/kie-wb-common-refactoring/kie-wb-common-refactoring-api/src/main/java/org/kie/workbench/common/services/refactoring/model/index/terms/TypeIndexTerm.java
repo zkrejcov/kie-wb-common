@@ -15,27 +15,16 @@
  */
 package org.kie.workbench.common.services.refactoring.model.index.terms;
 
-import org.uberfire.commons.validation.PortablePreconditions;
+import org.jboss.errai.common.client.api.annotations.Portable;
 
+@Portable
 public class TypeIndexTerm implements IndexTerm {
 
     public static final String TERM = "type_name";
 
-    private final String fullyQualifiedClassName;
-
-    public TypeIndexTerm( final String fullyQualifiedClassName ) {
-        this.fullyQualifiedClassName = PortablePreconditions.checkNotNull( "fullyQualifiedClassName",
-                                                                           fullyQualifiedClassName );
-    }
-
     @Override
     public String getTerm() {
         return TERM;
-    }
-
-    @Override
-    public String getValue() {
-        return fullyQualifiedClassName;
     }
 
 }
