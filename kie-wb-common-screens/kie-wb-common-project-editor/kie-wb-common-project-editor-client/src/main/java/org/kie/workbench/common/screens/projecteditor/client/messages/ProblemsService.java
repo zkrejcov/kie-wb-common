@@ -25,9 +25,6 @@ import javax.inject.Inject;
 
 import com.google.gwt.view.client.HasData;
 import com.google.gwt.view.client.ListDataProvider;
-import org.guvnor.common.services.project.builder.model.BuildMessage;
-import org.guvnor.common.services.project.builder.model.BuildResults;
-import org.guvnor.common.services.project.builder.model.IncrementalBuildResults;
 import org.guvnor.common.services.shared.events.PublishBatchMessagesEvent;
 import org.guvnor.common.services.shared.events.PublishMessagesEvent;
 import org.guvnor.common.services.shared.events.SystemMessage;
@@ -47,7 +44,6 @@ public class ProblemsService {
 
     private final PlaceManager placeManager;
     private final PanelManager panelManager;
-    private final ListDataProvider<BuildMessage> dataProviderOLD = new ListDataProvider<BuildMessage>();
 
     private final ListDataProvider<ProblemsServiceRow> dataProvider = new ListDataProvider<ProblemsServiceRow>( );
 
@@ -97,33 +93,6 @@ public class ProblemsService {
         }
         publishMessages( publishBatchEvent.getSessionId(), publishBatchEvent.getUserId(), publishBatchEvent.getPlace(), publishBatchEvent.getMessagesToPublish() );
         if (publishBatchEvent.isShowSystemConsole() && allowedPerspectives.contains(currentPerspective)) {
-            placeManager.goTo( "org.kie.guvnor.Problems" );
-        }
-    }
-
-    public void addBuildMessages( final @Observes BuildResults results ) {
-        List<BuildMessage> list = dataProviderOLD.getList();
-        list.clear();
-        for ( BuildMessage buildMessage : results.getMessages() ) {
-            list.add( buildMessage );
-        }
-        if (allowedPerspectives.contains(currentPerspective)) {
-            placeManager.goTo( "org.kie.guvnor.Problems" );
-        }
-    }
-
-    public void addIncrementalBuildMessages( final @Observes IncrementalBuildResults results ) {
-        final List<BuildMessage> addedMessages = results.getAddedMessages();
-        final List<BuildMessage> removedMessages = results.getRemovedMessages();
-
-        List<BuildMessage> list = dataProviderOLD.getList();
-        for ( BuildMessage buildMessage : removedMessages ) {
-            list.remove( buildMessage );
-        }
-        for ( BuildMessage buildMessage : addedMessages ) {
-            list.add( buildMessage );
-        }
-        if ( allowedPerspectives.contains(currentPerspective) ) {
             placeManager.goTo( "org.kie.guvnor.Problems" );
         }
     }

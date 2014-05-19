@@ -45,7 +45,7 @@ import org.uberfire.workbench.model.menu.MenuFactory;
 import org.uberfire.workbench.model.menu.Menus;
 
 @ApplicationScoped
-@WorkbenchScreen(identifier = "org.kie.guvnor.Problems")
+@WorkbenchScreen(identifier = "org.kie.guvnor.ProblemsToBeRemoved")
 public class ProblemsScreen
         implements ProblemsScreenView.Presenter {
 

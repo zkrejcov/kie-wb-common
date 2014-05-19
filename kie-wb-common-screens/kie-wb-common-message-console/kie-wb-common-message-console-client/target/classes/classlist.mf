@@ -1,0 +1,7 @@
+org.kie.workbench.common.screens.messageconsole.client.console.BuildResultsObserver
+org.kie.workbench.common.screens.messageconsole.client.console.ProblemsScreenActivity
+org.kie.workbench.common.screens.messageconsole.client.console.ProblemsScreenView
+org.kie.workbench.common.screens.messageconsole.client.console.ProblemsScreen
+org.kie.workbench.common.screens.messageconsole.client.console.ProblemsService
+org.kie.workbench.common.screens.messageconsole.client.console.ProblemsServiceRow
+org.kie.workbench.common.screens.messageconsole.client.console.ProblemsScreenViewImpl
