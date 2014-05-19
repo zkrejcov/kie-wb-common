@@ -11,21 +11,22 @@ import org.drools.workbench.models.datamodel.util.PortablePreconditions;
 import org.kie.workbench.common.services.refactoring.backend.server.query.NamedQuery;
 import org.kie.workbench.common.services.refactoring.backend.server.query.QueryBuilder;
 import org.kie.workbench.common.services.refactoring.model.index.terms.IndexTerm;
+import org.kie.workbench.common.services.refactoring.model.index.terms.ParentRuleIndexTerm;
 import org.kie.workbench.common.services.refactoring.model.index.terms.RuleIndexTerm;
 import org.kie.workbench.common.services.refactoring.model.index.terms.valueterms.ValueIndexTerm;
 
 @ApplicationScoped
-public class FindRulesQuery implements NamedQuery {
+public class FindParentRulesQuery implements NamedQuery {
 
     @Override
     public String getName() {
-        return "FindRulesQuery";
+        return "FindParentRulesQuery";
     }
 
     @Override
     public Set<IndexTerm> getTerms() {
         return new HashSet<IndexTerm>() {{
-            add( new RuleIndexTerm() );
+            add( new ParentRuleIndexTerm() );
         }};
     }
 
@@ -33,6 +34,7 @@ public class FindRulesQuery implements NamedQuery {
     public Set<IndexTerm> getResultTerms() {
         return new HashSet<IndexTerm>() {{
             add( new RuleIndexTerm() );
+            add( new ParentRuleIndexTerm() );
         }};
     }
 
@@ -42,19 +44,19 @@ public class FindRulesQuery implements NamedQuery {
         PortablePreconditions.checkNotNull( "terms",
                                             terms );
         if ( terms.size() != 1 ) {
-            throw new IllegalArgumentException( "Required term has not been provided. Require '" + RuleIndexTerm.TERM + "'." );
+            throw new IllegalArgumentException( "Required term has not been provided. Require '" + ParentRuleIndexTerm.TERM + "'." );
         }
         final Map<String, ValueIndexTerm> normalizedTerms = normalizeTerms( terms );
-        final ValueIndexTerm ruleTerm = normalizedTerms.get( RuleIndexTerm.TERM );
-        if ( ruleTerm == null ) {
-            throw new IllegalArgumentException( "Required term has not been provided. Require '" + RuleIndexTerm.TERM + "'." );
+        final ValueIndexTerm parentRuleTerm = normalizedTerms.get( ParentRuleIndexTerm.TERM );
+        if ( parentRuleTerm == null ) {
+            throw new IllegalArgumentException( "Required term has not been provided. Require '" + ParentRuleIndexTerm.TERM + "'." );
         }
 
         final QueryBuilder builder = new QueryBuilder();
         if ( useWildcards ) {
             builder.useWildcards();
         }
-        builder.addTerm( ruleTerm );
+        builder.addTerm( parentRuleTerm );
         return builder.build();
     }
 

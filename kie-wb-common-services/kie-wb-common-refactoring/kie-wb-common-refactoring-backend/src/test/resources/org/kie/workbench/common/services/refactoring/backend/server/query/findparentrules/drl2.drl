@@ -1,0 +1,7 @@
+import org.kie.workbench.common.services.refactoring.backend.server.drl.classes.Applicant;
+
+rule "myRule2" extends "myRule"
+when
+  Applicant( age > 40 )
+then
+end;

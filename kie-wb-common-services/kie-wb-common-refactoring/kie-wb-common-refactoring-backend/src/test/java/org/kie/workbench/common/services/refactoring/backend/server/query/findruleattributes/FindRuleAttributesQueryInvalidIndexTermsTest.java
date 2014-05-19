@@ -1,4 +1,4 @@
-package org.kie.workbench.common.services.refactoring.backend.server.query;
+package org.kie.workbench.common.services.refactoring.backend.server.query.findruleattributes;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -14,6 +14,9 @@ import org.kie.workbench.common.services.refactoring.backend.server.TestIndexer;
 import org.kie.workbench.common.services.refactoring.backend.server.drl.TestDrlFileIndexer;
 import org.kie.workbench.common.services.refactoring.backend.server.drl.TestDrlFileTypeDefinition;
 import org.kie.workbench.common.services.refactoring.backend.server.indexing.RuleAttributeNameAnalyzer;
+import org.kie.workbench.common.services.refactoring.backend.server.query.NamedQuery;
+import org.kie.workbench.common.services.refactoring.backend.server.query.RefactoringQueryServiceImpl;
+import org.kie.workbench.common.services.refactoring.backend.server.query.standard.FindRuleAttributesQuery;
 import org.kie.workbench.common.services.refactoring.backend.server.query.standard.FindRulesQuery;
 import org.kie.workbench.common.services.refactoring.model.index.terms.RuleAttributeIndexTerm;
 import org.kie.workbench.common.services.refactoring.model.index.terms.valueterms.ValueIndexTerm;
@@ -29,14 +32,14 @@ import static org.apache.lucene.util.Version.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
-public class RefactoringQueryServiceImplValidIndexTermsTest extends BaseIndexingTest<TestDrlFileTypeDefinition> {
+public class FindRuleAttributesQueryInvalidIndexTermsTest extends BaseIndexingTest<TestDrlFileTypeDefinition> {
 
     private Set<NamedQuery> queries = new HashSet<NamedQuery>() {{
-        add( new FindRulesQuery() );
+        add( new FindRuleAttributesQuery() );
     }};
 
     @Test
-    public void testQueryValidIndexTerms() throws IOException, InterruptedException {
+    public void testQueryInvalidIndexTerms() throws IOException, InterruptedException {
         final Instance<NamedQuery> namedQueriesProducer = mock( Instance.class );
         when( namedQueriesProducer.iterator() ).thenReturn( queries.iterator() );
 
@@ -58,21 +61,49 @@ public class RefactoringQueryServiceImplValidIndexTermsTest extends BaseIndexing
         Thread.sleep( 5000 ); //wait for events to be consumed from jgit -> (notify changes -> watcher -> index) -> lucene index
 
         {
-            final RefactoringPageRequest request = new RefactoringPageRequest( "FindRulesQuery",
-                                                                               new HashSet<ValueIndexTerm>() {{
-                                                                                   add( new ValueRuleIndexTerm( "myRule" ) );
-                                                                               }},
+            final RefactoringPageRequest request = new RefactoringPageRequest( "FindRuleAttributesQuery",
+                                                                               new HashSet<ValueIndexTerm>(),
                                                                                0,
-                                                                               10 );
+                                                                               -1 );
 
             try {
                 final PageResponse<RefactoringPageRow> response = service.query( request );
-                assertNotNull( response );
-                assertEquals( 1,
-                              response.getPageRowList().size() );
-
-            } catch ( IllegalArgumentException e ) {
                 fail();
+            } catch ( IllegalArgumentException e ) {
+                //Swallow. Expected
+            }
+        }
+
+        {
+            final RefactoringPageRequest request = new RefactoringPageRequest( "FindRuleAttributesQuery",
+                                                                               new HashSet<ValueIndexTerm>() {{
+                                                                                   add( new ValueTypeIndexTerm( "org.kie.workbench.common.services.refactoring.backend.server.drl.classes.Applicant" ) );
+                                                                               }},
+                                                                               0,
+                                                                               -1 );
+
+            try {
+                final PageResponse<RefactoringPageRow> response = service.query( request );
+                fail();
+            } catch ( IllegalArgumentException e ) {
+                //Swallow. Expected
+            }
+        }
+
+        {
+            final RefactoringPageRequest request = new RefactoringPageRequest( "FindRuleAttributesQuery",
+                                                                               new HashSet<ValueIndexTerm>() {{
+                                                                                   add( new ValueRuleIndexTerm( "myRule" ) );
+                                                                                   add( new ValueTypeIndexTerm( "org.kie.workbench.common.services.refactoring.backend.server.drl.classes.Applicant" ) );
+                                                                               }},
+                                                                               0,
+                                                                               -1 );
+
+            try {
+                final PageResponse<RefactoringPageRow> response = service.query( request );
+                fail();
+            } catch ( IllegalArgumentException e ) {
+                //Swallow. Expected
             }
         }
 

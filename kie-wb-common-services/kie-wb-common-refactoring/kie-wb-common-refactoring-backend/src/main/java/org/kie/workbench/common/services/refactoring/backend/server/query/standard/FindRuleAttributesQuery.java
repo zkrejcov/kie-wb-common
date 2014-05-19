@@ -11,28 +11,31 @@ import org.drools.workbench.models.datamodel.util.PortablePreconditions;
 import org.kie.workbench.common.services.refactoring.backend.server.query.NamedQuery;
 import org.kie.workbench.common.services.refactoring.backend.server.query.QueryBuilder;
 import org.kie.workbench.common.services.refactoring.model.index.terms.IndexTerm;
-import org.kie.workbench.common.services.refactoring.model.index.terms.RuleIndexTerm;
+import org.kie.workbench.common.services.refactoring.model.index.terms.RuleAttributeIndexTerm;
+import org.kie.workbench.common.services.refactoring.model.index.terms.RuleAttributeValueIndexTerm;
 import org.kie.workbench.common.services.refactoring.model.index.terms.valueterms.ValueIndexTerm;
 
 @ApplicationScoped
-public class FindRulesQuery implements NamedQuery {
+public class FindRuleAttributesQuery implements NamedQuery {
 
     @Override
     public String getName() {
-        return "FindRulesQuery";
+        return "FindRuleAttributesQuery";
     }
 
     @Override
     public Set<IndexTerm> getTerms() {
         return new HashSet<IndexTerm>() {{
-            add( new RuleIndexTerm() );
+            add( new RuleAttributeIndexTerm() );
+            add( new RuleAttributeValueIndexTerm() );
         }};
     }
 
     @Override
     public Set<IndexTerm> getResultTerms() {
         return new HashSet<IndexTerm>() {{
-            add( new RuleIndexTerm() );
+            add( new RuleAttributeIndexTerm() );
+            add( new RuleAttributeValueIndexTerm() );
         }};
     }
 
@@ -41,20 +44,21 @@ public class FindRulesQuery implements NamedQuery {
                           final boolean useWildcards ) {
         PortablePreconditions.checkNotNull( "terms",
                                             terms );
-        if ( terms.size() != 1 ) {
-            throw new IllegalArgumentException( "Required term has not been provided. Require '" + RuleIndexTerm.TERM + "'." );
+        if ( terms.size() != 2 ) {
+            throw new IllegalArgumentException( "Required terms have not been provided. Require '" + RuleAttributeIndexTerm.TERM + "' and '" + RuleAttributeValueIndexTerm.TERM + "'." );
         }
         final Map<String, ValueIndexTerm> normalizedTerms = normalizeTerms( terms );
-        final ValueIndexTerm ruleTerm = normalizedTerms.get( RuleIndexTerm.TERM );
-        if ( ruleTerm == null ) {
-            throw new IllegalArgumentException( "Required term has not been provided. Require '" + RuleIndexTerm.TERM + "'." );
+        final ValueIndexTerm ruleAttributeTerm = normalizedTerms.get( RuleAttributeIndexTerm.TERM );
+        final ValueIndexTerm ruleAttributeValueTerm = normalizedTerms.get( RuleAttributeValueIndexTerm.TERM );
+        if ( ruleAttributeTerm == null || ruleAttributeValueTerm == null ) {
+            throw new IllegalArgumentException( "Required terms have not been provided. Require '" + RuleAttributeIndexTerm.TERM + "' and '" + RuleAttributeValueIndexTerm.TERM + "'." );
         }
 
         final QueryBuilder builder = new QueryBuilder();
         if ( useWildcards ) {
             builder.useWildcards();
         }
-        builder.addTerm( ruleTerm );
+        builder.addTerm( ruleAttributeTerm ).addTerm( ruleAttributeValueTerm );
         return builder.build();
     }
 
