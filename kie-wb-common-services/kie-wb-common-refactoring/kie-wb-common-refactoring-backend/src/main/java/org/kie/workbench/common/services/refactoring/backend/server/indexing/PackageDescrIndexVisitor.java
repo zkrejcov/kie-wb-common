@@ -69,7 +69,6 @@ import org.kie.workbench.common.services.refactoring.model.index.RuleAttribute;
 import org.kie.workbench.common.services.refactoring.model.index.Type;
 import org.kie.workbench.common.services.refactoring.model.index.TypeField;
 import org.kie.workbench.common.services.refactoring.model.index.terms.valueterms.ValueFieldIndexTerm;
-import org.kie.workbench.common.services.refactoring.model.index.terms.valueterms.ValueParentRuleIndexTerm;
 import org.kie.workbench.common.services.refactoring.model.index.terms.valueterms.ValueRuleAttributeIndexTerm;
 import org.kie.workbench.common.services.refactoring.model.index.terms.valueterms.ValueRuleAttributeValueIndexTerm;
 import org.kie.workbench.common.services.refactoring.model.index.terms.valueterms.ValueRuleIndexTerm;
@@ -434,7 +433,7 @@ public class PackageDescrIndexVisitor {
 
     protected void visit( final RuleDescr descr ) {
         builder.addRule( new Rule( new ValueRuleIndexTerm( descr.getName() ),
-                                   ( descr.getParentName() == null ? null : new ValueParentRuleIndexTerm( descr.getParentName() ) ) ) );
+                                   ( descr.getParentName() == null ? null : new ValueRuleIndexTerm( descr.getParentName() ) ) ) );
         for ( AttributeDescr d : descr.getAttributes().values() ) {
             visit( d );
         }

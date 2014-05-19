@@ -56,6 +56,10 @@ public class FindRulesQueryInvalidIndexTermsTest extends BaseIndexingTest<TestDr
         final String drl1 = loadText( "drl1.drl" );
         ioService().write( path1,
                            drl1 );
+        final Path path2 = basePath.resolve( "drl2.drl" );
+        final String drl2 = loadText( "drl2.drl" );
+        ioService().write( path2,
+                           drl2 );
 
         Thread.sleep( 5000 ); //wait for events to be consumed from jgit -> (notify changes -> watcher -> index) -> lucene index
 

@@ -1,9 +1,8 @@
-package org.kie.workbench.common.services.refactoring.backend.server.query.findparentrules;
+package org.kie.workbench.common.services.refactoring.backend.server.query.findtypes;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.enterprise.inject.Instance;
@@ -17,12 +16,11 @@ import org.kie.workbench.common.services.refactoring.backend.server.drl.TestDrlF
 import org.kie.workbench.common.services.refactoring.backend.server.indexing.RuleAttributeNameAnalyzer;
 import org.kie.workbench.common.services.refactoring.backend.server.query.NamedQuery;
 import org.kie.workbench.common.services.refactoring.backend.server.query.RefactoringQueryServiceImpl;
-import org.kie.workbench.common.services.refactoring.backend.server.query.standard.FindParentRulesQuery;
-import org.kie.workbench.common.services.refactoring.model.index.terms.ParentRuleIndexTerm;
+import org.kie.workbench.common.services.refactoring.backend.server.query.standard.FindTypesQuery;
 import org.kie.workbench.common.services.refactoring.model.index.terms.RuleAttributeIndexTerm;
-import org.kie.workbench.common.services.refactoring.model.index.terms.RuleIndexTerm;
 import org.kie.workbench.common.services.refactoring.model.index.terms.valueterms.ValueIndexTerm;
-import org.kie.workbench.common.services.refactoring.model.index.terms.valueterms.ValueParentRuleIndexTerm;
+import org.kie.workbench.common.services.refactoring.model.index.terms.valueterms.ValueRuleIndexTerm;
+import org.kie.workbench.common.services.refactoring.model.index.terms.valueterms.ValueTypeIndexTerm;
 import org.kie.workbench.common.services.refactoring.model.query.RefactoringPageRequest;
 import org.kie.workbench.common.services.refactoring.model.query.RefactoringPageRow;
 import org.kie.workbench.common.services.refactoring.service.RefactoringQueryService;
@@ -33,14 +31,14 @@ import static org.apache.lucene.util.Version.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
-public class FindParentRulesQueryValidIndexTermsTest extends BaseIndexingTest<TestDrlFileTypeDefinition> {
+public class FindTypesQueryInvalidIndexTermsTest extends BaseIndexingTest<TestDrlFileTypeDefinition> {
 
     private Set<NamedQuery> queries = new HashSet<NamedQuery>() {{
-        add( new FindParentRulesQuery() );
+        add( new FindTypesQuery() );
     }};
 
     @Test
-    public void testFindParentRulesQueryValidIndexTerms() throws IOException, InterruptedException {
+    public void testFindTypesQueryInvalidIndexTerms() throws IOException, InterruptedException {
         final Instance<NamedQuery> namedQueriesProducer = mock( Instance.class );
         when( namedQueriesProducer.iterator() ).thenReturn( queries.iterator() );
 
@@ -66,31 +64,49 @@ public class FindParentRulesQueryValidIndexTermsTest extends BaseIndexingTest<Te
         Thread.sleep( 5000 ); //wait for events to be consumed from jgit -> (notify changes -> watcher -> index) -> lucene index
 
         {
-            final RefactoringPageRequest request = new RefactoringPageRequest( "FindParentRulesQuery",
-                                                                               new HashSet<ValueIndexTerm>() {{
-                                                                                   add( new ValueParentRuleIndexTerm( "myRule" ) );
-                                                                               }},
+            final RefactoringPageRequest request = new RefactoringPageRequest( "FindTypesQuery",
+                                                                               new HashSet<ValueIndexTerm>(),
                                                                                0,
-                                                                               10 );
+                                                                               -1 );
 
             try {
                 final PageResponse<RefactoringPageRow> response = service.query( request );
-                assertNotNull( response );
-                assertEquals( 1,
-                              response.getPageRowList().size() );
-                assertResponseContains( response.getPageRowList(),
-                                        path2 );
-
-                final RefactoringPageRow row1 = response.getPageRowList().get( 0 );
-                assertEquals( 2,
-                              row1.getTerms().size() );
-                assertEquals( "myRule",
-                              row1.getTerms().get( ParentRuleIndexTerm.TERM ) );
-                assertEquals( "myRule2",
-                              row1.getTerms().get( RuleIndexTerm.TERM ) );
-
-            } catch ( IllegalArgumentException e ) {
                 fail();
+            } catch ( IllegalArgumentException e ) {
+                //Swallow. Expected
+            }
+        }
+
+        {
+            final RefactoringPageRequest request = new RefactoringPageRequest( "FindTypesQuery",
+                                                                               new HashSet<ValueIndexTerm>() {{
+                                                                                   add( new ValueRuleIndexTerm( "myRule" ) );
+                                                                               }},
+                                                                               0,
+                                                                               -1 );
+
+            try {
+                final PageResponse<RefactoringPageRow> response = service.query( request );
+                fail();
+            } catch ( IllegalArgumentException e ) {
+                //Swallow. Expected
+            }
+        }
+
+        {
+            final RefactoringPageRequest request = new RefactoringPageRequest( "FindTypesQuery",
+                                                                               new HashSet<ValueIndexTerm>() {{
+                                                                                   add( new ValueTypeIndexTerm( "org.kie.workbench.common.services.refactoring.backend.server.drl.classes.Applicant" ) );
+                                                                                   add( new ValueRuleIndexTerm( "myRule" ) );
+                                                                               }},
+                                                                               0,
+                                                                               -1 );
+
+            try {
+                final PageResponse<RefactoringPageRow> response = service.query( request );
+                fail();
+            } catch ( IllegalArgumentException e ) {
+                //Swallow. Expected
             }
         }
 
@@ -117,18 +133,6 @@ public class FindParentRulesQueryValidIndexTermsTest extends BaseIndexingTest<Te
     @Override
     protected String getRepositoryName() {
         return this.getClass().getSimpleName();
-    }
-
-    private void assertResponseContains( final List<RefactoringPageRow> rows,
-                                         final Path path ) {
-        for ( RefactoringPageRow row : rows ) {
-            final String rowFileName = row.getPath().getFileName();
-            final String fileName = path.getFileName().toString();
-            if ( rowFileName.endsWith( fileName ) ) {
-                return;
-            }
-        }
-        fail( "Response does not contain expected Path '" + path.toUri().toString() );
     }
 
 }

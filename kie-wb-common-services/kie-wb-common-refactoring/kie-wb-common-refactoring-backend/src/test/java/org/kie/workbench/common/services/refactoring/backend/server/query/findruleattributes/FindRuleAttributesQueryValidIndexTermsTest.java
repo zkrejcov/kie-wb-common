@@ -87,22 +87,6 @@ public class FindRuleAttributesQueryValidIndexTermsTest extends BaseIndexingTest
                 assertResponseContains( response.getPageRowList(),
                                         path2 );
 
-                final RefactoringPageRow row1 = response.getPageRowList().get( 0 );
-                assertEquals( 2,
-                              row1.getTerms().size() );
-                assertEquals( "ruleflow-group",
-                              row1.getTerms().get( ValueRuleAttributeIndexTerm.TERM ) );
-                assertEquals( "myRuleFlowGroup",
-                              row1.getTerms().get( ValueRuleAttributeValueIndexTerm.TERM ) );
-
-                final RefactoringPageRow row2 = response.getPageRowList().get( 0 );
-                assertEquals( 2,
-                              row2.getTerms().size() );
-                assertEquals( "ruleflow-group",
-                              row2.getTerms().get( ValueRuleAttributeIndexTerm.TERM ) );
-                assertEquals( "myRuleFlowGroup",
-                              row2.getTerms().get( ValueRuleAttributeValueIndexTerm.TERM ) );
-
             } catch ( IllegalArgumentException e ) {
                 fail();
             }
@@ -130,35 +114,6 @@ public class FindRuleAttributesQueryValidIndexTermsTest extends BaseIndexingTest
                                         path2 );
                 assertResponseContains( response.getPageRowList(),
                                         path3 );
-
-                final RefactoringPageRow row1 = response.getPageRowList().get( 0 );
-                assertEquals( 2,
-                              row1.getTerms().size() );
-                assertEquals( "ruleflow-group",
-                              row1.getTerms().get( ValueRuleAttributeIndexTerm.TERM ) );
-                assertNotNull( row1.getTerms().get( ValueRuleAttributeValueIndexTerm.TERM ) );
-                ruleFlowGroups.add( row1.getTerms().get( ValueRuleAttributeValueIndexTerm.TERM ) );
-
-                final RefactoringPageRow row2 = response.getPageRowList().get( 1 );
-                assertEquals( 2,
-                              row2.getTerms().size() );
-                assertEquals( "ruleflow-group",
-                              row2.getTerms().get( ValueRuleAttributeIndexTerm.TERM ) );
-                assertNotNull( row2.getTerms().get( ValueRuleAttributeValueIndexTerm.TERM ) );
-                ruleFlowGroups.add( row2.getTerms().get( ValueRuleAttributeValueIndexTerm.TERM ) );
-
-                final RefactoringPageRow row3 = response.getPageRowList().get( 2 );
-                assertEquals( 2,
-                              row3.getTerms().size() );
-                assertEquals( "ruleflow-group",
-                              row3.getTerms().get( ValueRuleAttributeIndexTerm.TERM ) );
-                assertNotNull( row3.getTerms().get( ValueRuleAttributeValueIndexTerm.TERM ) );
-                ruleFlowGroups.add( row3.getTerms().get( ValueRuleAttributeValueIndexTerm.TERM ) );
-
-                assertEquals( 2,
-                              ruleFlowGroups.size() );
-                assertTrue( ruleFlowGroups.contains( "myRuleFlowGroup" ) );
-                assertTrue( ruleFlowGroups.contains( "myRuleFlowGroup2" ) );
 
             } catch ( IllegalArgumentException e ) {
                 fail();

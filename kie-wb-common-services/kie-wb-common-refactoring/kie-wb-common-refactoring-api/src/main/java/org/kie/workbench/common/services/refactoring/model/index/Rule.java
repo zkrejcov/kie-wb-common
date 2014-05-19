@@ -18,7 +18,6 @@ package org.kie.workbench.common.services.refactoring.model.index;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.kie.workbench.common.services.refactoring.model.index.terms.valueterms.ValueParentRuleIndexTerm;
 import org.kie.workbench.common.services.refactoring.model.index.terms.valueterms.ValueRuleIndexTerm;
 import org.uberfire.commons.data.Pair;
 import org.uberfire.commons.validation.PortablePreconditions;
@@ -26,15 +25,15 @@ import org.uberfire.commons.validation.PortablePreconditions;
 public class Rule implements IndexElementsGenerator {
 
     private ValueRuleIndexTerm ruleTerm;
-    private ValueParentRuleIndexTerm parentRuleTerm;
+    private ValueRuleIndexTerm parentRuleTerm;
 
     public Rule( final ValueRuleIndexTerm rule ) {
         this( rule,
-              null );
+              new ValueRuleIndexTerm( null ) );
     }
 
     public Rule( final ValueRuleIndexTerm ruleTerm,
-                 final ValueParentRuleIndexTerm parentRuleTerm ) {
+                 final ValueRuleIndexTerm parentRuleTerm ) {
         this.ruleTerm = PortablePreconditions.checkNotNull( "ruleTerm",
                                                             ruleTerm );
         this.parentRuleTerm = parentRuleTerm;

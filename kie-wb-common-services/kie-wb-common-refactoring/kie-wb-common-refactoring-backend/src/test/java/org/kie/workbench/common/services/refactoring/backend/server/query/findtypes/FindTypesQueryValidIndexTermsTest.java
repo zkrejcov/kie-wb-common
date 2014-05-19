@@ -1,4 +1,4 @@
-package org.kie.workbench.common.services.refactoring.backend.server.query.findrules;
+package org.kie.workbench.common.services.refactoring.backend.server.query.findtypes;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -17,10 +17,10 @@ import org.kie.workbench.common.services.refactoring.backend.server.drl.TestDrlF
 import org.kie.workbench.common.services.refactoring.backend.server.indexing.RuleAttributeNameAnalyzer;
 import org.kie.workbench.common.services.refactoring.backend.server.query.NamedQuery;
 import org.kie.workbench.common.services.refactoring.backend.server.query.RefactoringQueryServiceImpl;
-import org.kie.workbench.common.services.refactoring.backend.server.query.standard.FindRulesQuery;
+import org.kie.workbench.common.services.refactoring.backend.server.query.standard.FindTypesQuery;
 import org.kie.workbench.common.services.refactoring.model.index.terms.RuleAttributeIndexTerm;
 import org.kie.workbench.common.services.refactoring.model.index.terms.valueterms.ValueIndexTerm;
-import org.kie.workbench.common.services.refactoring.model.index.terms.valueterms.ValueRuleIndexTerm;
+import org.kie.workbench.common.services.refactoring.model.index.terms.valueterms.ValueTypeIndexTerm;
 import org.kie.workbench.common.services.refactoring.model.query.RefactoringPageRequest;
 import org.kie.workbench.common.services.refactoring.model.query.RefactoringPageRow;
 import org.kie.workbench.common.services.refactoring.service.RefactoringQueryService;
@@ -31,14 +31,14 @@ import static org.apache.lucene.util.Version.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
-public class FindRulesQueryValidIndexTermsTest extends BaseIndexingTest<TestDrlFileTypeDefinition> {
+public class FindTypesQueryValidIndexTermsTest extends BaseIndexingTest<TestDrlFileTypeDefinition> {
 
     private Set<NamedQuery> queries = new HashSet<NamedQuery>() {{
-        add( new FindRulesQuery() );
+        add( new FindTypesQuery() );
     }};
 
     @Test
-    public void testFindRulesQueryValidIndexTerms() throws IOException, InterruptedException {
+    public void testFindTypesQueryValidIndexTerms() throws IOException, InterruptedException {
         final Instance<NamedQuery> namedQueriesProducer = mock( Instance.class );
         when( namedQueriesProducer.iterator() ).thenReturn( queries.iterator() );
 
@@ -64,9 +64,9 @@ public class FindRulesQueryValidIndexTermsTest extends BaseIndexingTest<TestDrlF
         Thread.sleep( 5000 ); //wait for events to be consumed from jgit -> (notify changes -> watcher -> index) -> lucene index
 
         {
-            final RefactoringPageRequest request = new RefactoringPageRequest( "FindRulesQuery",
+            final RefactoringPageRequest request = new RefactoringPageRequest( "FindTypesQuery",
                                                                                new HashSet<ValueIndexTerm>() {{
-                                                                                   add( new ValueRuleIndexTerm( "myRule" ) );
+                                                                                   add( new ValueTypeIndexTerm( "org.kie.workbench.common.services.refactoring.backend.server.drl.classes.Applicant" ) );
                                                                                }},
                                                                                0,
                                                                                10 );

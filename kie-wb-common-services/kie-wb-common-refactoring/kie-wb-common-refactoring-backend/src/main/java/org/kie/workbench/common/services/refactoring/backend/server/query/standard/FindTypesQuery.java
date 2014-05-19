@@ -1,3 +1,18 @@
+/*
+ * Copyright 2014 JBoss, by Red Hat, Inc
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.kie.workbench.common.services.refactoring.backend.server.query.standard;
 
 import java.util.HashMap;
@@ -10,31 +25,24 @@ import org.apache.lucene.search.Query;
 import org.drools.workbench.models.datamodel.util.PortablePreconditions;
 import org.kie.workbench.common.services.refactoring.backend.server.query.NamedQuery;
 import org.kie.workbench.common.services.refactoring.backend.server.query.QueryBuilder;
+import org.kie.workbench.common.services.refactoring.backend.server.query.response.DefaultResponseBuilder;
+import org.kie.workbench.common.services.refactoring.backend.server.query.response.ResponseBuilder;
 import org.kie.workbench.common.services.refactoring.model.index.terms.IndexTerm;
-import org.kie.workbench.common.services.refactoring.model.index.terms.ParentRuleIndexTerm;
-import org.kie.workbench.common.services.refactoring.model.index.terms.RuleIndexTerm;
+import org.kie.workbench.common.services.refactoring.model.index.terms.TypeIndexTerm;
 import org.kie.workbench.common.services.refactoring.model.index.terms.valueterms.ValueIndexTerm;
 
 @ApplicationScoped
-public class FindParentRulesQuery implements NamedQuery {
+public class FindTypesQuery implements NamedQuery {
 
     @Override
     public String getName() {
-        return "FindParentRulesQuery";
+        return "FindTypesQuery";
     }
 
     @Override
     public Set<IndexTerm> getTerms() {
         return new HashSet<IndexTerm>() {{
-            add( new ParentRuleIndexTerm() );
-        }};
-    }
-
-    @Override
-    public Set<IndexTerm> getResultTerms() {
-        return new HashSet<IndexTerm>() {{
-            add( new RuleIndexTerm() );
-            add( new ParentRuleIndexTerm() );
+            add( new TypeIndexTerm() );
         }};
     }
 
@@ -44,19 +52,19 @@ public class FindParentRulesQuery implements NamedQuery {
         PortablePreconditions.checkNotNull( "terms",
                                             terms );
         if ( terms.size() != 1 ) {
-            throw new IllegalArgumentException( "Required term has not been provided. Require '" + ParentRuleIndexTerm.TERM + "'." );
+            throw new IllegalArgumentException( "Required term has not been provided. Require '" + TypeIndexTerm.TERM + "'." );
         }
         final Map<String, ValueIndexTerm> normalizedTerms = normalizeTerms( terms );
-        final ValueIndexTerm parentRuleTerm = normalizedTerms.get( ParentRuleIndexTerm.TERM );
-        if ( parentRuleTerm == null ) {
-            throw new IllegalArgumentException( "Required term has not been provided. Require '" + ParentRuleIndexTerm.TERM + "'." );
+        final ValueIndexTerm typeTerm = normalizedTerms.get( TypeIndexTerm.TERM );
+        if ( typeTerm == null ) {
+            throw new IllegalArgumentException( "Required term has not been provided. Require '" + TypeIndexTerm.TERM + "'." );
         }
 
         final QueryBuilder builder = new QueryBuilder();
         if ( useWildcards ) {
             builder.useWildcards();
         }
-        builder.addTerm( parentRuleTerm );
+        builder.addTerm( typeTerm );
         return builder.build();
     }
 
@@ -67,6 +75,11 @@ public class FindParentRulesQuery implements NamedQuery {
                                  term );
         }
         return normalizedTerms;
+    }
+
+    @Override
+    public ResponseBuilder getResponseBuilder() {
+        return new DefaultResponseBuilder();
     }
 
 }

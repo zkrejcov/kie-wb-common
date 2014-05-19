@@ -15,7 +15,6 @@
  */
 package org.kie.workbench.common.services.refactoring.backend.server.query;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -35,18 +34,16 @@ import org.apache.lucene.search.TopScoreDocCollector;
 import org.apache.lucene.search.TotalHitCountCollector;
 import org.drools.workbench.models.datamodel.util.PortablePreconditions;
 import org.jboss.errai.bus.server.annotations.Service;
+import org.kie.workbench.common.services.refactoring.backend.server.query.response.ResponseBuilder;
 import org.kie.workbench.common.services.refactoring.model.index.terms.IndexTerm;
 import org.kie.workbench.common.services.refactoring.model.index.terms.valueterms.ValueIndexTerm;
 import org.kie.workbench.common.services.refactoring.model.query.RefactoringPageRequest;
 import org.kie.workbench.common.services.refactoring.model.query.RefactoringPageRow;
 import org.kie.workbench.common.services.refactoring.service.RefactoringQueryService;
-import org.uberfire.backend.server.util.Paths;
 import org.uberfire.io.IOService;
-import org.uberfire.java.nio.file.Path;
 import org.uberfire.metadata.backend.lucene.LuceneConfig;
 import org.uberfire.metadata.backend.lucene.index.LuceneIndexManager;
 import org.uberfire.metadata.model.KObject;
-import org.uberfire.metadata.model.KProperty;
 import org.uberfire.metadata.search.ClusterSegment;
 import org.uberfire.paging.PageResponse;
 
@@ -124,7 +121,6 @@ public class RefactoringQueryServiceImpl implements RefactoringQueryService {
 
         //Validate provided terms against those required for the named query
         final Set<IndexTerm> namedQueryTerms = namedQuery.getTerms();
-        final Set<IndexTerm> namedQueryResultTerms = namedQuery.getResultTerms();
         final Set<ValueIndexTerm> queryTerms = request.getQueryTerms();
         for ( IndexTerm term : namedQueryTerms ) {
             if ( !valueTermsContainsRequiredTerm( queryTerms,
@@ -151,11 +147,12 @@ public class RefactoringQueryServiceImpl implements RefactoringQueryService {
             final List<KObject> kObjects = search( query,
                                                    pageSize,
                                                    startIndex );
-            return buildResponse( hits,
-                                  pageSize,
-                                  startIndex,
-                                  namedQueryResultTerms,
-                                  kObjects );
+
+            final ResponseBuilder responseBuilder = namedQuery.getResponseBuilder();
+            return responseBuilder.buildResponse( pageSize,
+                                                  startIndex,
+                                                  ioService,
+                                                  kObjects );
         }
         return emptyResponse;
     }
@@ -220,45 +217,6 @@ public class RefactoringQueryServiceImpl implements RefactoringQueryService {
         }
 
         return result;
-    }
-
-    private PageResponse<RefactoringPageRow> buildResponse( final int hits,
-                                                            final int pageSize,
-                                                            final int startRow,
-                                                            final Set<IndexTerm> resultTerms,
-                                                            final List<KObject> kObjects ) {
-        final List<RefactoringPageRow> result = new ArrayList<RefactoringPageRow>( kObjects.size() );
-        for ( final KObject kObject : kObjects ) {
-            final Path path = ioService.get( URI.create( kObject.getKey() ) );
-            final RefactoringPageRow row = new RefactoringPageRow( Paths.convert( path ) );
-            for ( KProperty property : kObject.getProperties() ) {
-                if ( resultTermsContainsProperty( resultTerms,
-                                                  property ) ) {
-                    row.addTerm( property.getName(),
-                                 property.getValue().toString() );
-                }
-            }
-            result.add( row );
-        }
-
-        final PageResponse<RefactoringPageRow> response = new PageResponse<RefactoringPageRow>();
-        response.setTotalRowSize( hits );
-        response.setPageRowList( result );
-        response.setTotalRowSizeExact( true );
-        response.setStartRowIndex( startRow );
-        response.setLastPage( ( pageSize * startRow + 2 ) >= hits );
-
-        return response;
-    }
-
-    private boolean resultTermsContainsProperty( final Set<IndexTerm> resultTerms,
-                                                 final KProperty property ) {
-        for ( IndexTerm term : resultTerms ) {
-            if ( term.getTerm().equals( property.getName() ) ) {
-                return true;
-            }
-        }
-        return false;
     }
 
 }

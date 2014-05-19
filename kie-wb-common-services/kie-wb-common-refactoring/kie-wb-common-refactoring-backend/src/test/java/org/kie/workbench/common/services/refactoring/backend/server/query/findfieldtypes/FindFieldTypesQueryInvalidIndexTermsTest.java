@@ -1,4 +1,4 @@
-package org.kie.workbench.common.services.refactoring.backend.server.query.findparentrules;
+package org.kie.workbench.common.services.refactoring.backend.server.query.findfieldtypes;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -16,10 +16,11 @@ import org.kie.workbench.common.services.refactoring.backend.server.drl.TestDrlF
 import org.kie.workbench.common.services.refactoring.backend.server.indexing.RuleAttributeNameAnalyzer;
 import org.kie.workbench.common.services.refactoring.backend.server.query.NamedQuery;
 import org.kie.workbench.common.services.refactoring.backend.server.query.RefactoringQueryServiceImpl;
-import org.kie.workbench.common.services.refactoring.backend.server.query.standard.FindParentRulesQuery;
+import org.kie.workbench.common.services.refactoring.backend.server.query.standard.FindTypeFieldsQuery;
+import org.kie.workbench.common.services.refactoring.backend.server.query.standard.FindTypesQuery;
 import org.kie.workbench.common.services.refactoring.model.index.terms.RuleAttributeIndexTerm;
 import org.kie.workbench.common.services.refactoring.model.index.terms.valueterms.ValueIndexTerm;
-import org.kie.workbench.common.services.refactoring.model.index.terms.valueterms.ValueParentRuleIndexTerm;
+import org.kie.workbench.common.services.refactoring.model.index.terms.valueterms.ValueRuleIndexTerm;
 import org.kie.workbench.common.services.refactoring.model.index.terms.valueterms.ValueTypeIndexTerm;
 import org.kie.workbench.common.services.refactoring.model.query.RefactoringPageRequest;
 import org.kie.workbench.common.services.refactoring.model.query.RefactoringPageRow;
@@ -31,14 +32,14 @@ import static org.apache.lucene.util.Version.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
-public class FindParentRulesQueryInvalidIndexTermsTest extends BaseIndexingTest<TestDrlFileTypeDefinition> {
+public class FindFieldTypesQueryInvalidIndexTermsTest extends BaseIndexingTest<TestDrlFileTypeDefinition> {
 
     private Set<NamedQuery> queries = new HashSet<NamedQuery>() {{
-        add( new FindParentRulesQuery() );
+        add( new FindTypeFieldsQuery() );
     }};
 
     @Test
-    public void testFindParentRulesQueryInvalidIndexTerms() throws IOException, InterruptedException {
+    public void testFindFieldTypesQueryInvalidIndexTerms() throws IOException, InterruptedException {
         final Instance<NamedQuery> namedQueriesProducer = mock( Instance.class );
         when( namedQueriesProducer.iterator() ).thenReturn( queries.iterator() );
 
@@ -56,11 +57,15 @@ public class FindParentRulesQueryInvalidIndexTermsTest extends BaseIndexingTest<
         final String drl1 = loadText( "drl1.drl" );
         ioService().write( path1,
                            drl1 );
+        final Path path2 = basePath.resolve( "drl2.drl" );
+        final String drl2 = loadText( "drl2.drl" );
+        ioService().write( path2,
+                           drl2 );
 
         Thread.sleep( 5000 ); //wait for events to be consumed from jgit -> (notify changes -> watcher -> index) -> lucene index
 
         {
-            final RefactoringPageRequest request = new RefactoringPageRequest( "FindParentRulesQuery",
+            final RefactoringPageRequest request = new RefactoringPageRequest( "FindTypeFieldsQuery",
                                                                                new HashSet<ValueIndexTerm>(),
                                                                                0,
                                                                                -1 );
@@ -74,9 +79,9 @@ public class FindParentRulesQueryInvalidIndexTermsTest extends BaseIndexingTest<
         }
 
         {
-            final RefactoringPageRequest request = new RefactoringPageRequest( "FindParentRulesQuery",
+            final RefactoringPageRequest request = new RefactoringPageRequest( "FindTypeFieldsQuery",
                                                                                new HashSet<ValueIndexTerm>() {{
-                                                                                   add( new ValueTypeIndexTerm( "org.kie.workbench.common.services.refactoring.backend.server.drl.classes.Applicant" ) );
+                                                                                   add( new ValueRuleIndexTerm( "myRule" ) );
                                                                                }},
                                                                                0,
                                                                                -1 );
@@ -90,10 +95,10 @@ public class FindParentRulesQueryInvalidIndexTermsTest extends BaseIndexingTest<
         }
 
         {
-            final RefactoringPageRequest request = new RefactoringPageRequest( "FindParentRulesQuery",
+            final RefactoringPageRequest request = new RefactoringPageRequest( "FindTypeFieldsQuery",
                                                                                new HashSet<ValueIndexTerm>() {{
-                                                                                   add( new ValueParentRuleIndexTerm( "myRule" ) );
                                                                                    add( new ValueTypeIndexTerm( "org.kie.workbench.common.services.refactoring.backend.server.drl.classes.Applicant" ) );
+                                                                                   add( new ValueRuleIndexTerm( "myRule" ) );
                                                                                }},
                                                                                0,
                                                                                -1 );

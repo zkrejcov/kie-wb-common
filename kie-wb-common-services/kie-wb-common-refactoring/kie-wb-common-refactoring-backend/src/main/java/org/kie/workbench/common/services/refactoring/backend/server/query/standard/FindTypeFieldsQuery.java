@@ -27,22 +27,24 @@ import org.kie.workbench.common.services.refactoring.backend.server.query.NamedQ
 import org.kie.workbench.common.services.refactoring.backend.server.query.QueryBuilder;
 import org.kie.workbench.common.services.refactoring.backend.server.query.response.DefaultResponseBuilder;
 import org.kie.workbench.common.services.refactoring.backend.server.query.response.ResponseBuilder;
+import org.kie.workbench.common.services.refactoring.model.index.terms.FieldIndexTerm;
 import org.kie.workbench.common.services.refactoring.model.index.terms.IndexTerm;
-import org.kie.workbench.common.services.refactoring.model.index.terms.RuleIndexTerm;
+import org.kie.workbench.common.services.refactoring.model.index.terms.TypeIndexTerm;
 import org.kie.workbench.common.services.refactoring.model.index.terms.valueterms.ValueIndexTerm;
 
 @ApplicationScoped
-public class FindRulesQuery implements NamedQuery {
+public class FindTypeFieldsQuery implements NamedQuery {
 
     @Override
     public String getName() {
-        return "FindRulesQuery";
+        return "FindTypeFieldsQuery";
     }
 
     @Override
     public Set<IndexTerm> getTerms() {
         return new HashSet<IndexTerm>() {{
-            add( new RuleIndexTerm() );
+            add( new TypeIndexTerm() );
+            add( new FieldIndexTerm() );
         }};
     }
 
@@ -51,20 +53,21 @@ public class FindRulesQuery implements NamedQuery {
                           final boolean useWildcards ) {
         PortablePreconditions.checkNotNull( "terms",
                                             terms );
-        if ( terms.size() != 1 ) {
-            throw new IllegalArgumentException( "Required term has not been provided. Require '" + RuleIndexTerm.TERM + "'." );
+        if ( terms.size() != 2 ) {
+            throw new IllegalArgumentException( "Required terms have not been provided. Require '" + TypeIndexTerm.TERM + "' and '" + FieldIndexTerm.TERM + "'." );
         }
         final Map<String, ValueIndexTerm> normalizedTerms = normalizeTerms( terms );
-        final ValueIndexTerm ruleTerm = normalizedTerms.get( RuleIndexTerm.TERM );
-        if ( ruleTerm == null ) {
-            throw new IllegalArgumentException( "Required term has not been provided. Require '" + RuleIndexTerm.TERM + "'." );
+        final ValueIndexTerm typeTerm = normalizedTerms.get( TypeIndexTerm.TERM );
+        final ValueIndexTerm typeFieldTerm = normalizedTerms.get( FieldIndexTerm.TERM );
+        if ( typeTerm == null || typeFieldTerm == null ) {
+            throw new IllegalArgumentException( "Required terms have not been provided. Require '" + TypeIndexTerm.TERM + "' and '" + FieldIndexTerm.TERM + "'." );
         }
 
         final QueryBuilder builder = new QueryBuilder();
         if ( useWildcards ) {
             builder.useWildcards();
         }
-        builder.addTerm( ruleTerm );
+        builder.addTerm( typeTerm ).addTerm( typeFieldTerm );
         return builder.build();
     }
 
