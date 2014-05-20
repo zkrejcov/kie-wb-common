@@ -15,40 +15,27 @@
  */
 package org.kie.workbench.common.services.refactoring.model.query;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.jboss.errai.common.client.api.annotations.Portable;
-import org.uberfire.backend.vfs.Path;
 import org.uberfire.commons.validation.PortablePreconditions;
-import org.uberfire.paging.AbstractPathPageRow;
+import org.uberfire.paging.AbstractPageRow;
 
 /**
  * A row of data containing refactoring information
  */
-@Portable
-public class RefactoringPageRow extends AbstractPathPageRow {
+public abstract class RefactoringPageRow<T> extends AbstractPageRow {
 
-    final Map<String, String> terms = new HashMap<String, String>();
+    private T value;
 
     public RefactoringPageRow() {
         super();
     }
 
-    public RefactoringPageRow( final Path path ) {
-        super( path );
+    public void setValue( final T value ) {
+        this.value = PortablePreconditions.checkNotNull( "value",
+                                                         value );
     }
 
-    public void addTerm( final String term,
-                         final String value ) {
-        this.terms.put( PortablePreconditions.checkNotNull( "term",
-                                                            term ),
-                        PortablePreconditions.checkNotNull( "value",
-                                                            value ) );
-    }
-
-    public Map<String, String> getTerms() {
-        return terms;
+    public T getValue() {
+        return value;
     }
 
 }

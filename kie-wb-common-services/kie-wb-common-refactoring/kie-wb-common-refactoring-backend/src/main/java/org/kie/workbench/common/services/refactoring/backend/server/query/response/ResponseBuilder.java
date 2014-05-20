@@ -18,7 +18,6 @@ package org.kie.workbench.common.services.refactoring.backend.server.query.respo
 import java.util.List;
 
 import org.kie.workbench.common.services.refactoring.model.query.RefactoringPageRow;
-import org.uberfire.io.IOService;
 import org.uberfire.metadata.model.KObject;
 import org.uberfire.paging.PageResponse;
 
@@ -26,6 +25,8 @@ public interface ResponseBuilder {
 
     PageResponse<RefactoringPageRow> buildResponse( final int pageSize,
                                                     final int startRow,
-                                                    final IOService ioService,
                                                     final List<KObject> kObjects );
+
+    List<RefactoringPageRow> buildResponse( final List<KObject> kObjects );
+
 }

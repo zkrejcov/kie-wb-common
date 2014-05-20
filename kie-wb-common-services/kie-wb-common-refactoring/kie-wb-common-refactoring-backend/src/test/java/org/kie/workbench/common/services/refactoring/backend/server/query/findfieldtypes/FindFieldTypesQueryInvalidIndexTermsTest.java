@@ -16,8 +16,9 @@ import org.kie.workbench.common.services.refactoring.backend.server.drl.TestDrlF
 import org.kie.workbench.common.services.refactoring.backend.server.indexing.RuleAttributeNameAnalyzer;
 import org.kie.workbench.common.services.refactoring.backend.server.query.NamedQuery;
 import org.kie.workbench.common.services.refactoring.backend.server.query.RefactoringQueryServiceImpl;
+import org.kie.workbench.common.services.refactoring.backend.server.query.response.ResponseBuilder;
+import org.kie.workbench.common.services.refactoring.backend.server.query.response.DefaultResponseBuilder;
 import org.kie.workbench.common.services.refactoring.backend.server.query.standard.FindTypeFieldsQuery;
-import org.kie.workbench.common.services.refactoring.backend.server.query.standard.FindTypesQuery;
 import org.kie.workbench.common.services.refactoring.model.index.terms.RuleAttributeIndexTerm;
 import org.kie.workbench.common.services.refactoring.model.index.terms.valueterms.ValueIndexTerm;
 import org.kie.workbench.common.services.refactoring.model.index.terms.valueterms.ValueRuleIndexTerm;
@@ -35,7 +36,12 @@ import static org.mockito.Mockito.*;
 public class FindFieldTypesQueryInvalidIndexTermsTest extends BaseIndexingTest<TestDrlFileTypeDefinition> {
 
     private Set<NamedQuery> queries = new HashSet<NamedQuery>() {{
-        add( new FindTypeFieldsQuery() );
+        add( new FindTypeFieldsQuery() {
+            @Override
+            public ResponseBuilder getResponseBuilder() {
+                return new DefaultResponseBuilder( ioService() );
+            }
+        } );
     }};
 
     @Test
@@ -44,7 +50,6 @@ public class FindFieldTypesQueryInvalidIndexTermsTest extends BaseIndexingTest<T
         when( namedQueriesProducer.iterator() ).thenReturn( queries.iterator() );
 
         final RefactoringQueryService service = new RefactoringQueryServiceImpl( getConfig(),
-                                                                                 ioService(),
                                                                                  namedQueriesProducer );
 
         //Don't ask, but we need to write a single file first in order for indexing to work

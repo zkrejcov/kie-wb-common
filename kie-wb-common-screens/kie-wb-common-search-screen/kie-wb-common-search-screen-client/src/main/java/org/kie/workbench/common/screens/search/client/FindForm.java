@@ -40,8 +40,8 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.MultiWordSuggestOracle;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
-import org.kie.workbench.common.screens.search.client.widgets.SearchResultTable;
 import org.kie.workbench.common.screens.search.client.resources.i18n.Constants;
+import org.kie.workbench.common.screens.search.client.widgets.SearchResultTable;
 import org.kie.workbench.common.screens.search.model.QueryMetadataPageRequest;
 import org.uberfire.client.annotations.WorkbenchPartTitle;
 import org.uberfire.client.annotations.WorkbenchScreen;
@@ -124,12 +124,6 @@ public class FindForm
 
     @UiField
     SimplePanel simplePanel;
-
-    @UiField
-    TextBox keyTextBox;
-
-    @UiField
-    TextBox valueTextBox;
 
     @PostConstruct
     public void init() {
@@ -233,11 +227,6 @@ public class FindForm
 
         if ( lastModifiedBefore.getValue() != null ) {
             hasSomeDateValue = true;
-        }
-
-        if ( !( keyTextBox.getText().trim().isEmpty() || valueTextBox.getText().trim().isEmpty() ) ) {
-            metadata.put( keyTextBox.getText().trim(),
-                          valueTextBox.getText().trim() );
         }
 
         if ( metadata.size() == 0 && !hasSomeDateValue ) {

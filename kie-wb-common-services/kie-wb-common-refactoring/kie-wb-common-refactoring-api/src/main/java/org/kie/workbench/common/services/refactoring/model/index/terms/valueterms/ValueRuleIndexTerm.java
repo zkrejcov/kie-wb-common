@@ -22,7 +22,11 @@ import org.uberfire.commons.validation.PortablePreconditions;
 @Portable
 public class ValueRuleIndexTerm extends RuleIndexTerm implements ValueIndexTerm {
 
-    private final String ruleName;
+    private String ruleName;
+
+    public ValueRuleIndexTerm() {
+        //Errai marshalling
+    }
 
     public ValueRuleIndexTerm( final String ruleName ) {
         this.ruleName = PortablePreconditions.checkNotNull( "ruleName",

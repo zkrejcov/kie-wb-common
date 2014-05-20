@@ -20,13 +20,14 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 
 import org.apache.lucene.search.Query;
 import org.drools.workbench.models.datamodel.util.PortablePreconditions;
 import org.kie.workbench.common.services.refactoring.backend.server.query.NamedQuery;
 import org.kie.workbench.common.services.refactoring.backend.server.query.QueryBuilder;
-import org.kie.workbench.common.services.refactoring.backend.server.query.response.DefaultResponseBuilder;
 import org.kie.workbench.common.services.refactoring.backend.server.query.response.ResponseBuilder;
+import org.kie.workbench.common.services.refactoring.backend.server.query.response.DefaultResponseBuilder;
 import org.kie.workbench.common.services.refactoring.model.index.terms.FieldIndexTerm;
 import org.kie.workbench.common.services.refactoring.model.index.terms.IndexTerm;
 import org.kie.workbench.common.services.refactoring.model.index.terms.TypeIndexTerm;
@@ -34,6 +35,9 @@ import org.kie.workbench.common.services.refactoring.model.index.terms.valueterm
 
 @ApplicationScoped
 public class FindTypeFieldsQuery implements NamedQuery {
+
+    @Inject
+    private DefaultResponseBuilder responseBuilder;
 
     @Override
     public String getName() {
@@ -82,7 +86,7 @@ public class FindTypeFieldsQuery implements NamedQuery {
 
     @Override
     public ResponseBuilder getResponseBuilder() {
-        return new DefaultResponseBuilder();
+        return responseBuilder;
     }
 
 }

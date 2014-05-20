@@ -17,6 +17,8 @@ import org.kie.workbench.common.services.refactoring.backend.server.drl.TestDrlF
 import org.kie.workbench.common.services.refactoring.backend.server.indexing.RuleAttributeNameAnalyzer;
 import org.kie.workbench.common.services.refactoring.backend.server.query.NamedQuery;
 import org.kie.workbench.common.services.refactoring.backend.server.query.RefactoringQueryServiceImpl;
+import org.kie.workbench.common.services.refactoring.backend.server.query.response.ResponseBuilder;
+import org.kie.workbench.common.services.refactoring.backend.server.query.response.DefaultResponseBuilder;
 import org.kie.workbench.common.services.refactoring.backend.server.query.standard.FindRulesQuery;
 import org.kie.workbench.common.services.refactoring.model.index.terms.RuleAttributeIndexTerm;
 import org.kie.workbench.common.services.refactoring.model.index.terms.valueterms.ValueIndexTerm;
@@ -34,7 +36,12 @@ import static org.mockito.Mockito.*;
 public class FindRulesQueryValidIndexTermsTest extends BaseIndexingTest<TestDrlFileTypeDefinition> {
 
     private Set<NamedQuery> queries = new HashSet<NamedQuery>() {{
-        add( new FindRulesQuery() );
+        add( new FindRulesQuery() {
+            @Override
+            public ResponseBuilder getResponseBuilder() {
+                return new DefaultResponseBuilder( ioService() );
+            }
+        } );
     }};
 
     @Test
@@ -43,7 +50,6 @@ public class FindRulesQueryValidIndexTermsTest extends BaseIndexingTest<TestDrlF
         when( namedQueriesProducer.iterator() ).thenReturn( queries.iterator() );
 
         final RefactoringQueryService service = new RefactoringQueryServiceImpl( getConfig(),
-                                                                                 ioService(),
                                                                                  namedQueriesProducer );
 
         //Don't ask, but we need to write a single file first in order for indexing to work
@@ -114,7 +120,7 @@ public class FindRulesQueryValidIndexTermsTest extends BaseIndexingTest<TestDrlF
     private void assertResponseContains( final List<RefactoringPageRow> rows,
                                          final Path path ) {
         for ( RefactoringPageRow row : rows ) {
-            final String rowFileName = row.getPath().getFileName();
+            final String rowFileName = ( (org.uberfire.backend.vfs.Path) row.getValue() ).getFileName();
             final String fileName = path.getFileName().toString();
             if ( rowFileName.endsWith( fileName ) ) {
                 return;

@@ -15,10 +15,12 @@
  */
 package org.kie.workbench.common.services.refactoring.service;
 
+import java.util.List;
 import java.util.Set;
 
 import org.jboss.errai.bus.server.annotations.Remote;
 import org.kie.workbench.common.services.refactoring.model.index.terms.IndexTerm;
+import org.kie.workbench.common.services.refactoring.model.index.terms.valueterms.ValueIndexTerm;
 import org.kie.workbench.common.services.refactoring.model.query.RefactoringPageRequest;
 import org.kie.workbench.common.services.refactoring.model.query.RefactoringPageRow;
 import org.uberfire.paging.PageResponse;
@@ -31,5 +33,9 @@ public interface RefactoringQueryService {
     Set<IndexTerm> getTerms( final String queryName );
 
     PageResponse<RefactoringPageRow> query( final RefactoringPageRequest request );
+
+    List<RefactoringPageRow> query( final String queryName,
+                                    final Set<ValueIndexTerm> queryTerms,
+                                    final boolean useWildcards );
 
 }

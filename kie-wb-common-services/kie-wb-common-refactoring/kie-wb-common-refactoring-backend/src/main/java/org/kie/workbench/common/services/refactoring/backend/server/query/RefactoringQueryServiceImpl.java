@@ -40,7 +40,6 @@ import org.kie.workbench.common.services.refactoring.model.index.terms.valueterm
 import org.kie.workbench.common.services.refactoring.model.query.RefactoringPageRequest;
 import org.kie.workbench.common.services.refactoring.model.query.RefactoringPageRow;
 import org.kie.workbench.common.services.refactoring.service.RefactoringQueryService;
-import org.uberfire.io.IOService;
 import org.uberfire.metadata.backend.lucene.LuceneConfig;
 import org.uberfire.metadata.backend.lucene.index.LuceneIndexManager;
 import org.uberfire.metadata.model.KObject;
@@ -54,18 +53,18 @@ import static org.uberfire.metadata.backend.lucene.util.KObjectUtil.*;
 public class RefactoringQueryServiceImpl implements RefactoringQueryService {
 
     private LuceneConfig config;
-    private IOService ioService;
     private Set<NamedQuery> namedQueries = new HashSet<NamedQuery>();
     private PageResponse<RefactoringPageRow> emptyResponse = null;
 
+    public RefactoringQueryServiceImpl() {
+        //Make proxyable
+    }
+
     @Inject
     public RefactoringQueryServiceImpl( @Named("luceneConfig") final LuceneConfig config,
-                                        @Named("ioStrategy") final IOService ioService,
                                         @Any final Instance<NamedQuery> namedQueries ) {
         this.config = PortablePreconditions.checkNotNull( "config",
                                                           config );
-        this.ioService = PortablePreconditions.checkNotNull( "ioService",
-                                                             ioService );
         PortablePreconditions.checkNotNull( "namedQueries",
                                             namedQueries );
         for ( NamedQuery namedQuery : namedQueries ) {
@@ -137,7 +136,7 @@ public class RefactoringQueryServiceImpl implements RefactoringQueryService {
             }
         }
 
-        final Query query = namedQuery.toQuery( request.getQueryTerms(),
+        final Query query = namedQuery.toQuery( queryTerms,
                                                 request.useWildcards() );
 
         final int hits = searchHits( query );
@@ -151,10 +150,60 @@ public class RefactoringQueryServiceImpl implements RefactoringQueryService {
             final ResponseBuilder responseBuilder = namedQuery.getResponseBuilder();
             return responseBuilder.buildResponse( pageSize,
                                                   startIndex,
-                                                  ioService,
                                                   kObjects );
         }
         return emptyResponse;
+    }
+
+    @Override
+    public List<RefactoringPageRow> query( final String queryName,
+                                           final Set<ValueIndexTerm> queryTerms,
+                                           final boolean useWildcards ) {
+        PortablePreconditions.checkNotNull( "queryName",
+                                            queryName );
+        PortablePreconditions.checkNotNull( "queryTerms",
+                                            queryTerms );
+
+        NamedQuery namedQuery = null;
+        for ( NamedQuery nq : namedQueries ) {
+            if ( nq.getName().equals( queryName ) ) {
+                namedQuery = nq;
+                break;
+            }
+        }
+        if ( namedQuery == null ) {
+            throw new IllegalArgumentException( "Named Query '" + queryName + "' does not exist." );
+        }
+
+        //Validate provided terms against those required for the named query
+        final Set<IndexTerm> namedQueryTerms = namedQuery.getTerms();
+        for ( IndexTerm term : namedQueryTerms ) {
+            if ( !valueTermsContainsRequiredTerm( queryTerms,
+                                                  term ) ) {
+                throw new IllegalArgumentException( "Expected IndexTerm '" + term.getTerm() + "' was not found." );
+            }
+        }
+
+        //Validate provided terms against those required for the named query
+        for ( ValueIndexTerm term : queryTerms ) {
+            if ( !requiredTermsContainsValueTerm( namedQueryTerms,
+                                                  term ) ) {
+                //log.warning - term will not be used
+            }
+        }
+
+        final Query query = namedQuery.toQuery( queryTerms,
+                                                useWildcards );
+
+        final int hits = searchHits( query );
+        if ( hits > 0 ) {
+            final List<KObject> kObjects = search( query,
+                                                   hits );
+
+            final ResponseBuilder responseBuilder = namedQuery.getResponseBuilder();
+            return responseBuilder.buildResponse( kObjects );
+        }
+        return Collections.emptyList();
     }
 
     private boolean valueTermsContainsRequiredTerm( final Set<ValueIndexTerm> providedTerms,
@@ -199,7 +248,8 @@ public class RefactoringQueryServiceImpl implements RefactoringQueryService {
                                   final int startIndex,
                                   final ClusterSegment... clusterSegments ) {
         final LuceneIndexManager indexManager = ( (LuceneIndexManager) config.getIndexManager() );
-        final TopScoreDocCollector collector = TopScoreDocCollector.create( ( startIndex + 1 ) * pageSize, true );
+        final TopScoreDocCollector collector = TopScoreDocCollector.create( ( startIndex + 1 ) * pageSize,
+                                                                            true );
         final IndexSearcher index = indexManager.getIndexSearcher( clusterSegments );
         final List<KObject> result = new ArrayList<KObject>( pageSize );
         try {
@@ -211,7 +261,33 @@ public class RefactoringQueryServiceImpl implements RefactoringQueryService {
                 result.add( toKObject( index.doc( hits[ i ].doc ) ) );
             }
         } catch ( final Exception ex ) {
-            throw new RuntimeException( "Error during Query!", ex );
+            throw new RuntimeException( "Error during Query!",
+                                        ex );
+        } finally {
+            indexManager.release( index );
+        }
+
+        return result;
+    }
+
+    private List<KObject> search( final Query query,
+                                  final int totalHits,
+                                  final ClusterSegment... clusterSegments ) {
+        final LuceneIndexManager indexManager = ( (LuceneIndexManager) config.getIndexManager() );
+        final TopScoreDocCollector collector = TopScoreDocCollector.create( totalHits,
+                                                                            true );
+        final IndexSearcher index = indexManager.getIndexSearcher( clusterSegments );
+        final List<KObject> result = new ArrayList<KObject>();
+        try {
+            index.search( query,
+                          collector );
+            final ScoreDoc[] hits = collector.topDocs().scoreDocs;
+            for ( int i = 0; i < hits.length; i++ ) {
+                result.add( toKObject( index.doc( hits[ i ].doc ) ) );
+            }
+        } catch ( final Exception ex ) {
+            throw new RuntimeException( "Error during Query!",
+                                        ex );
         } finally {
             indexManager.release( index );
         }

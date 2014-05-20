@@ -22,7 +22,11 @@ import org.uberfire.commons.validation.PortablePreconditions;
 @Portable
 public class ValueTypeIndexTerm extends TypeIndexTerm implements ValueIndexTerm {
 
-    private final String fullyQualifiedClassName;
+    private String fullyQualifiedClassName;
+
+    public ValueTypeIndexTerm() {
+        //Errai marshalling
+    }
 
     public ValueTypeIndexTerm( final String fullyQualifiedClassName ) {
         this.fullyQualifiedClassName = PortablePreconditions.checkNotNull( "fullyQualifiedClassName",

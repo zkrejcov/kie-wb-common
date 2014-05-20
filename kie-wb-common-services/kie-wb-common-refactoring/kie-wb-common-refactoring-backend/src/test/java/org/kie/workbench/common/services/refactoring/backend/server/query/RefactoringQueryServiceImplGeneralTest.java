@@ -15,6 +15,8 @@ import org.kie.workbench.common.services.refactoring.backend.server.TestIndexer;
 import org.kie.workbench.common.services.refactoring.backend.server.drl.TestDrlFileIndexer;
 import org.kie.workbench.common.services.refactoring.backend.server.drl.TestDrlFileTypeDefinition;
 import org.kie.workbench.common.services.refactoring.backend.server.indexing.RuleAttributeNameAnalyzer;
+import org.kie.workbench.common.services.refactoring.backend.server.query.response.DefaultResponseBuilder;
+import org.kie.workbench.common.services.refactoring.backend.server.query.response.ResponseBuilder;
 import org.kie.workbench.common.services.refactoring.backend.server.query.standard.FindRulesQuery;
 import org.kie.workbench.common.services.refactoring.model.index.terms.IndexTerm;
 import org.kie.workbench.common.services.refactoring.model.index.terms.RuleAttributeIndexTerm;
@@ -30,7 +32,12 @@ public class RefactoringQueryServiceImplGeneralTest extends BaseIndexingTest<Tes
     private Instance<NamedQuery> namedQueriesProducer;
 
     private Set<NamedQuery> queries = new HashSet<NamedQuery>() {{
-        add( new FindRulesQuery() );
+        add( new FindRulesQuery() {
+            @Override
+            public ResponseBuilder getResponseBuilder() {
+                return new DefaultResponseBuilder( ioService() );
+            }
+        } );
     }};
 
     @Before
@@ -42,7 +49,6 @@ public class RefactoringQueryServiceImplGeneralTest extends BaseIndexingTest<Tes
     @Test
     public void testGetNamedQueries() throws IOException, InterruptedException {
         final RefactoringQueryService service = new RefactoringQueryServiceImpl( getConfig(),
-                                                                                 ioService(),
                                                                                  namedQueriesProducer );
 
         final Set<String> queryNames = service.getQueries();
@@ -55,7 +61,6 @@ public class RefactoringQueryServiceImplGeneralTest extends BaseIndexingTest<Tes
     @Test(expected = IllegalArgumentException.class)
     public void testGetNonExistentNamedQueryTerms() throws IOException, InterruptedException {
         final RefactoringQueryService service = new RefactoringQueryServiceImpl( getConfig(),
-                                                                                 ioService(),
                                                                                  namedQueriesProducer );
         final Set<String> queryNames = service.getQueries();
         assertNotNull( queryNames );
@@ -69,7 +74,6 @@ public class RefactoringQueryServiceImplGeneralTest extends BaseIndexingTest<Tes
     @Test
     public void testGetNamedQueryTerms() throws IOException, InterruptedException {
         final RefactoringQueryService service = new RefactoringQueryServiceImpl( getConfig(),
-                                                                                 ioService(),
                                                                                  namedQueriesProducer );
         final Set<String> queryNames = service.getQueries();
         assertNotNull( queryNames );
