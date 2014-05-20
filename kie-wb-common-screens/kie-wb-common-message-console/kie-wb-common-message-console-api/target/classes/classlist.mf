@@ -1,6 +1,0 @@
-org.kie.workbench.common.screens.messageconsole.events.MessageUtils
-org.kie.workbench.common.screens.messageconsole.events.PublishBatchMessagesEvent
-org.kie.workbench.common.screens.messageconsole.events.UnpublishMessagesEvent
-org.kie.workbench.common.screens.messageconsole.events.PublishBaseEvent
-org.kie.workbench.common.screens.messageconsole.events.PublishMessagesEvent
-org.kie.workbench.common.screens.messageconsole.events.SystemMessage
