@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
+import javax.inject.Provider;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.lucene.analysis.Analyzer;
@@ -37,13 +38,13 @@ import org.guvnor.common.services.project.service.ProjectService;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.uberfire.io.IOService;
-import org.uberfire.java.nio.file.Path;
 import org.kie.uberfire.metadata.backend.lucene.LuceneConfig;
 import org.kie.uberfire.metadata.backend.lucene.LuceneConfigBuilder;
 import org.kie.uberfire.metadata.engine.Indexer;
 import org.kie.uberfire.metadata.io.IOServiceIndexedImpl;
 import org.kie.uberfire.metadata.model.KObject;
+import org.uberfire.io.IOService;
+import org.uberfire.java.nio.file.Path;
 import org.uberfire.workbench.type.ResourceTypeDefinition;
 
 import static org.junit.Assert.*;
@@ -172,9 +173,19 @@ public abstract class BaseIndexingTest<T extends ResourceTypeDefinition> {
                                                   config.getIndexers() );
 
             //Mock CDI injection and setup
-            indexer.setIOService( ioService );
+            indexer.setIOServiceProvider( new Provider<IOService>() {
+                @Override
+                public IOService get() {
+                    return ioService;
+                }
+            } );
+            indexer.setProjectServiceProvider( new Provider<ProjectService>() {
+                @Override
+                public ProjectService get() {
+                    return getProjectService();
+                }
+            } );
             indexer.setResourceTypeDefinition( getResourceTypeDefinition() );
-            indexer.setProjectService( getProjectService() );
         }
         return ioService;
     }

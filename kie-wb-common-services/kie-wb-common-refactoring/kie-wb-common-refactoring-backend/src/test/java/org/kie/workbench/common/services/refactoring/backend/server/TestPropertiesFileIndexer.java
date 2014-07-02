@@ -21,15 +21,16 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Provider;
 
 import org.guvnor.common.services.project.service.ProjectService;
+import org.kie.uberfire.metadata.model.KObject;
+import org.kie.uberfire.metadata.model.KObjectKey;
 import org.kie.workbench.common.services.refactoring.backend.server.util.KObjectUtil;
 import org.uberfire.backend.server.util.Paths;
 import org.uberfire.commons.data.Pair;
 import org.uberfire.io.IOService;
 import org.uberfire.java.nio.file.Path;
-import org.kie.uberfire.metadata.model.KObject;
-import org.kie.uberfire.metadata.model.KObjectKey;
 
 /**
  * Test indexer that simply loads Properties from the file
@@ -37,25 +38,25 @@ import org.kie.uberfire.metadata.model.KObjectKey;
 @ApplicationScoped
 public class TestPropertiesFileIndexer implements TestIndexer<TestPropertiesFileTypeDefinition> {
 
-    private IOService ioService;
+    private Provider<IOService> ioServiceProvider;
 
     private TestPropertiesFileTypeDefinition type;
 
-    private ProjectService projectService;
+    private Provider<ProjectService> projectServiceProvider;
 
     @Override
-    public void setIOService( final IOService ioService ) {
-        this.ioService = ioService;
+    public void setIOServiceProvider( final Provider<IOService> ioServiceProvider ) {
+        this.ioServiceProvider = ioServiceProvider;
+    }
+
+    @Override
+    public void setProjectServiceProvider( final Provider<ProjectService> projectServiceProvider ) {
+        this.projectServiceProvider = projectServiceProvider;
     }
 
     @Override
     public void setResourceTypeDefinition( final TestPropertiesFileTypeDefinition type ) {
         this.type = type;
-    }
-
-    @Override
-    public void setProjectService( final ProjectService projectService ) {
-        this.projectService = projectService;
     }
 
     @Override
@@ -68,7 +69,7 @@ public class TestPropertiesFileIndexer implements TestIndexer<TestPropertiesFile
         InputStream is = null;
         final Properties properties = new Properties();
         try {
-            is = ioService.newInputStream( path );
+            is = ioServiceProvider.get().newInputStream( path );
             properties.load( is );
             is.close();
 

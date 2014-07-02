@@ -21,6 +21,7 @@ import java.util.Set;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.inject.Provider;
 
 import org.drools.core.base.ClassTypeResolver;
 import org.guvnor.common.services.builder.LRUBuilderCache;
@@ -33,6 +34,9 @@ import org.jboss.forge.roaster.model.source.FieldSource;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.kie.api.builder.KieModule;
 import org.kie.scanner.KieModuleMetaData;
+import org.kie.uberfire.metadata.engine.Indexer;
+import org.kie.uberfire.metadata.model.KObject;
+import org.kie.uberfire.metadata.model.KObjectKey;
 import org.kie.workbench.common.screens.datamodeller.model.index.FieldName;
 import org.kie.workbench.common.screens.datamodeller.model.index.FieldType;
 import org.kie.workbench.common.screens.datamodeller.model.index.JavaType;
@@ -56,9 +60,6 @@ import org.slf4j.LoggerFactory;
 import org.uberfire.backend.server.util.Paths;
 import org.uberfire.io.IOService;
 import org.uberfire.java.nio.file.Path;
-import org.kie.uberfire.metadata.engine.Indexer;
-import org.kie.uberfire.metadata.model.KObject;
-import org.kie.uberfire.metadata.model.KObjectKey;
 
 /**
  * The following information is being indexed for java files.
@@ -96,17 +97,17 @@ public class JavaFileIndexer implements Indexer {
     private static final Logger logger = LoggerFactory.getLogger( JavaFileIndexer.class );
 
     @Inject
+    @Named("ioStrategy")
+    protected Provider<IOService> ioServiceProvider;
+
+    @Inject
+    protected Provider<ProjectService> projectServiceProvider;
+
+    @Inject
     protected JavaResourceTypeDefinition javaResourceTypeDefinition;
 
     @Inject
-    @Named("ioStrategy")
-    protected IOService ioService;
-
-    @Inject
-    protected ProjectService projectService;
-
-    @Inject
-    private LRUBuilderCache builderCache;
+    private Provider<LRUBuilderCache> builderCacheProvider;
 
     @Override
     public boolean supportsPath( Path path ) {
@@ -118,7 +119,7 @@ public class JavaFileIndexer implements Indexer {
         KObject index = null;
 
         try {
-            final String javaSource = ioService.readAllString( path );
+            final String javaSource = ioServiceProvider.get().readAllString( path );
             final Project project = getProject( path );
 
             if ( project == null ) {
@@ -245,15 +246,15 @@ public class JavaFileIndexer implements Indexer {
     }
 
     protected Project getProject( final Path path ) {
-        return projectService.resolveProject( Paths.convert( path ) );
+        return projectServiceProvider.get().resolveProject( Paths.convert( path ) );
     }
 
     protected Package getPackage( final Path path ) {
-        return projectService.resolvePackage( Paths.convert( path ) );
+        return projectServiceProvider.get().resolvePackage( Paths.convert( path ) );
     }
 
     protected ClassLoader getProjectClassLoader( Project project ) {
-        final KieModule module = builderCache.assertBuilder( project ).getKieModuleIgnoringErrors();
+        final KieModule module = builderCacheProvider.get().assertBuilder( project ).getKieModuleIgnoringErrors();
         final ClassLoader classLoader = KieModuleMetaData.Factory.newKieModuleMetaData( module ).getClassLoader();
         return classLoader;
     }

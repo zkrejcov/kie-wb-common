@@ -15,29 +15,31 @@
  */
 package org.kie.workbench.common.services.refactoring.backend.server;
 
+import javax.inject.Provider;
+
 import org.guvnor.common.services.project.service.ProjectService;
-import org.uberfire.io.IOService;
 import org.kie.uberfire.metadata.engine.Indexer;
+import org.uberfire.io.IOService;
 import org.uberfire.workbench.type.ResourceTypeDefinition;
 
 public interface TestIndexer<T extends ResourceTypeDefinition> extends Indexer {
 
     /**
-     * Mock CDI injection of IOService
-     * @param ioService
+     * Mock CDI injection of Provider for IOService
+     * @param ioServiceProvider
      */
-    void setIOService( final IOService ioService );
+    void setIOServiceProvider( final Provider<IOService> ioServiceProvider );
+
+    /**
+     * Mock CDI injection of Provider for ProjectService
+     * @param projectServiceProvider
+     */
+    void setProjectServiceProvider( final Provider<ProjectService> projectServiceProvider );
 
     /**
      * Mock CDI injection of ResourceTypeDefinition
      * @param type
      */
     void setResourceTypeDefinition( final T type );
-
-    /**
-     * Mock CDI injection of ProjectService
-     * @param projectService
-     */
-    void setProjectService( final ProjectService projectService );
 
 }

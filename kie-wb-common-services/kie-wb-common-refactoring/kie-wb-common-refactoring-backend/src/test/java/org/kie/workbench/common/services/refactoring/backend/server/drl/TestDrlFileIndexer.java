@@ -17,6 +17,7 @@ package org.kie.workbench.common.services.refactoring.backend.server.drl;
 
 import java.util.HashMap;
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Provider;
 
 import org.drools.compiler.compiler.DrlParser;
 import org.drools.compiler.lang.descr.PackageDescr;
@@ -28,6 +29,8 @@ import org.drools.workbench.models.datamodel.oracle.ProjectDataModelOracle;
 import org.guvnor.common.services.project.model.Package;
 import org.guvnor.common.services.project.model.Project;
 import org.guvnor.common.services.project.service.ProjectService;
+import org.kie.uberfire.metadata.model.KObject;
+import org.kie.uberfire.metadata.model.KObjectKey;
 import org.kie.workbench.common.services.refactoring.backend.server.TestIndexer;
 import org.kie.workbench.common.services.refactoring.backend.server.indexing.DefaultIndexBuilder;
 import org.kie.workbench.common.services.refactoring.backend.server.indexing.PackageDescrIndexVisitor;
@@ -37,33 +40,31 @@ import org.slf4j.LoggerFactory;
 import org.uberfire.backend.server.util.Paths;
 import org.uberfire.io.IOService;
 import org.uberfire.java.nio.file.Path;
-import org.kie.uberfire.metadata.model.KObject;
-import org.kie.uberfire.metadata.model.KObjectKey;
 
 @ApplicationScoped
 public class TestDrlFileIndexer implements TestIndexer<TestDrlFileTypeDefinition> {
 
     private static final Logger logger = LoggerFactory.getLogger( TestDrlFileIndexer.class );
 
-    private IOService ioService;
+    private Provider<IOService> ioServiceProvider;
+
+    private Provider<ProjectService> projectServiceProvider;
 
     private TestDrlFileTypeDefinition type;
 
-    private ProjectService projectService;
+    @Override
+    public void setIOServiceProvider( final Provider<IOService> ioServiceProvider ) {
+        this.ioServiceProvider = ioServiceProvider;
+    }
 
     @Override
-    public void setIOService( final IOService ioService ) {
-        this.ioService = ioService;
+    public void setProjectServiceProvider( final Provider<ProjectService> projectServiceProvider ) {
+        this.projectServiceProvider = projectServiceProvider;
     }
 
     @Override
     public void setResourceTypeDefinition( final TestDrlFileTypeDefinition type ) {
         this.type = type;
-    }
-
-    @Override
-    public void setProjectService( final ProjectService projectService ) {
-        this.projectService = projectService;
     }
 
     @Override
@@ -76,7 +77,7 @@ public class TestDrlFileIndexer implements TestIndexer<TestDrlFileTypeDefinition
         KObject index = null;
 
         try {
-            final String drl = ioService.readAllString( path );
+            final String drl = ioServiceProvider.get().readAllString( path );
             final DrlParser drlParser = new DrlParser();
             final PackageDescr packageDescr = drlParser.parse( true,
                                                                drl );
@@ -86,8 +87,8 @@ public class TestDrlFileIndexer implements TestIndexer<TestDrlFileTypeDefinition
             }
 
             final ProjectDataModelOracle dmo = getProjectDataModelOracle( path );
-            final Project project = projectService.resolveProject( Paths.convert( path ) );
-            final Package pkg = projectService.resolvePackage( Paths.convert( path ) );
+            final Project project = projectServiceProvider.get().resolveProject( Paths.convert( path ) );
+            final Package pkg = projectServiceProvider.get().resolvePackage( Paths.convert( path ) );
 
             final DefaultIndexBuilder builder = new DefaultIndexBuilder( project,
                                                                          pkg );
