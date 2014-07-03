@@ -24,7 +24,6 @@ import java.lang.annotation.Annotation;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -42,8 +41,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.kie.uberfire.metadata.backend.lucene.LuceneConfig;
 import org.kie.uberfire.metadata.backend.lucene.LuceneConfigBuilder;
-import org.kie.uberfire.metadata.engine.Indexer;
 import org.kie.uberfire.metadata.io.IOServiceIndexedImpl;
+import org.kie.uberfire.metadata.io.IndexersFactory;
 import org.kie.uberfire.metadata.model.KObject;
 import org.uberfire.io.IOService;
 import org.uberfire.java.nio.file.Path;
@@ -163,16 +162,13 @@ public abstract class BaseIndexingTest<T extends ResourceTypeDefinition> {
             final Map<String, Analyzer> analyzers = getAnalyzers();
             config = new LuceneConfigBuilder()
                     .withInMemoryMetaModelStore()
-                    .usingIndexers( new HashSet<Indexer>() {{
-                        add( indexer );
-                    }} )
                     .usingAnalyzers( analyzers )
                     .useDirectoryBasedIndex()
                     .useInMemoryDirectory()
                     .build();
 
-            ioService = new IOServiceIndexedImpl( config.getIndexEngine(),
-                                                  config.getIndexers() );
+            ioService = new IOServiceIndexedImpl( config.getIndexEngine() );
+            IndexersFactory.addIndexer( indexer );
 
             //Mock CDI injection and setup
             indexer.setIOServiceProvider( new Instance<IOService>() {
