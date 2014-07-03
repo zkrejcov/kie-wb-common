@@ -19,9 +19,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.inject.Provider;
 
 import org.drools.core.base.ClassTypeResolver;
 import org.guvnor.common.services.builder.LRUBuilderCache;
@@ -98,16 +98,16 @@ public class JavaFileIndexer implements Indexer {
 
     @Inject
     @Named("ioStrategy")
-    protected Provider<IOService> ioServiceProvider;
+    protected Instance<IOService> ioServiceProvider;
 
     @Inject
-    protected Provider<ProjectService> projectServiceProvider;
+    protected Instance<ProjectService> projectServiceProvider;
+
+    @Inject
+    private Instance<LRUBuilderCache> builderCacheProvider;
 
     @Inject
     protected JavaResourceTypeDefinition javaResourceTypeDefinition;
-
-    @Inject
-    private Provider<LRUBuilderCache> builderCacheProvider;
 
     @Override
     public boolean supportsPath( Path path ) {
