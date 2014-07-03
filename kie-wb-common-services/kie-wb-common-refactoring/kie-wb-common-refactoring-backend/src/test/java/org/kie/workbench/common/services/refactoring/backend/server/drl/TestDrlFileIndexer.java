@@ -17,7 +17,7 @@ package org.kie.workbench.common.services.refactoring.backend.server.drl;
 
 import java.util.HashMap;
 import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Provider;
+import javax.enterprise.inject.Instance;
 
 import org.drools.compiler.compiler.DrlParser;
 import org.drools.compiler.lang.descr.PackageDescr;
@@ -46,19 +46,19 @@ public class TestDrlFileIndexer implements TestIndexer<TestDrlFileTypeDefinition
 
     private static final Logger logger = LoggerFactory.getLogger( TestDrlFileIndexer.class );
 
-    private Provider<IOService> ioServiceProvider;
+    private Instance<IOService> ioServiceProvider;
 
-    private Provider<ProjectService> projectServiceProvider;
+    private Instance<ProjectService> projectServiceProvider;
 
     private TestDrlFileTypeDefinition type;
 
     @Override
-    public void setIOServiceProvider( final Provider<IOService> ioServiceProvider ) {
+    public void setIOServiceProvider( final Instance<IOService> ioServiceProvider ) {
         this.ioServiceProvider = ioServiceProvider;
     }
 
     @Override
-    public void setProjectServiceProvider( final Provider<ProjectService> projectServiceProvider ) {
+    public void setProjectServiceProvider( final Instance<ProjectService> projectServiceProvider ) {
         this.projectServiceProvider = projectServiceProvider;
     }
 

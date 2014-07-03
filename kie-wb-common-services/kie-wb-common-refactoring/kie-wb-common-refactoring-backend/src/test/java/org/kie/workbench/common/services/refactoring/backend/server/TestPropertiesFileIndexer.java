@@ -21,7 +21,7 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Provider;
+import javax.enterprise.inject.Instance;
 
 import org.guvnor.common.services.project.service.ProjectService;
 import org.kie.uberfire.metadata.model.KObject;
@@ -38,19 +38,19 @@ import org.uberfire.java.nio.file.Path;
 @ApplicationScoped
 public class TestPropertiesFileIndexer implements TestIndexer<TestPropertiesFileTypeDefinition> {
 
-    private Provider<IOService> ioServiceProvider;
+    private Instance<IOService> ioServiceProvider;
+
+    private Instance<ProjectService> projectServiceProvider;
 
     private TestPropertiesFileTypeDefinition type;
 
-    private Provider<ProjectService> projectServiceProvider;
-
     @Override
-    public void setIOServiceProvider( final Provider<IOService> ioServiceProvider ) {
+    public void setIOServiceProvider( final Instance<IOService> ioServiceProvider ) {
         this.ioServiceProvider = ioServiceProvider;
     }
 
     @Override
-    public void setProjectServiceProvider( final Provider<ProjectService> projectServiceProvider ) {
+    public void setProjectServiceProvider( final Instance<ProjectService> projectServiceProvider ) {
         this.projectServiceProvider = projectServiceProvider;
     }
 

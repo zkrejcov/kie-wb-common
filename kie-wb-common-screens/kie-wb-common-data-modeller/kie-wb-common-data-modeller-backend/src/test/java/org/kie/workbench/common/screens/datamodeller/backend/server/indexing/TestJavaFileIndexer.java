@@ -15,7 +15,7 @@
  */
 package org.kie.workbench.common.screens.datamodeller.backend.server.indexing;
 
-import javax.inject.Provider;
+import javax.enterprise.inject.Instance;
 
 import org.guvnor.common.services.project.model.Package;
 import org.guvnor.common.services.project.model.Project;
@@ -31,12 +31,12 @@ import static org.mockito.Mockito.*;
 public class TestJavaFileIndexer extends JavaFileIndexer implements TestIndexer<JavaResourceTypeDefinition> {
 
     @Override
-    public void setIOServiceProvider( final Provider<IOService> ioServiceProvider ) {
+    public void setIOServiceProvider( final Instance<IOService> ioServiceProvider ) {
         this.ioServiceProvider = ioServiceProvider;
     }
 
     @Override
-    public void setProjectServiceProvider( final Provider<ProjectService> projectServiceProvider ) {
+    public void setProjectServiceProvider( final Instance<ProjectService> projectServiceProvider ) {
         this.projectServiceProvider = projectServiceProvider;
     }
 

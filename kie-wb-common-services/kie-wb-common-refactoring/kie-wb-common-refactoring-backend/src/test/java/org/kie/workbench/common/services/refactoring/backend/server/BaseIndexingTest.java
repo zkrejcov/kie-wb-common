@@ -20,15 +20,17 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.annotation.Annotation;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
-import javax.inject.Provider;
+import javax.enterprise.inject.Instance;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.lucene.analysis.Analyzer;
@@ -173,13 +175,70 @@ public abstract class BaseIndexingTest<T extends ResourceTypeDefinition> {
                                                   config.getIndexers() );
 
             //Mock CDI injection and setup
-            indexer.setIOServiceProvider( new Provider<IOService>() {
+            indexer.setIOServiceProvider( new Instance<IOService>() {
+
+                @Override
+                public Instance<IOService> select( final Annotation... annotations ) {
+                    return null;
+                }
+
+                @Override
+                public <U extends IOService> Instance<U> select( final Class<U> uClass,
+                                                                 final Annotation... annotations ) {
+                    return null;
+                }
+
+                @Override
+                public boolean isUnsatisfied() {
+                    return false;
+                }
+
+                @Override
+                public boolean isAmbiguous() {
+                    return false;
+                }
+
+                @Override
+                public Iterator<IOService> iterator() {
+                    return new ArrayList<IOService>() {{
+                        add( ioService );
+                    }}.iterator();
+                }
+
                 @Override
                 public IOService get() {
                     return ioService;
                 }
             } );
-            indexer.setProjectServiceProvider( new Provider<ProjectService>() {
+            indexer.setProjectServiceProvider( new Instance<ProjectService>() {
+                @Override
+                public Instance<ProjectService> select( final Annotation... annotations ) {
+                    return null;
+                }
+
+                @Override
+                public <U extends ProjectService> Instance<U> select( final Class<U> uClass,
+                                                                      final Annotation... annotations ) {
+                    return null;
+                }
+
+                @Override
+                public boolean isUnsatisfied() {
+                    return false;
+                }
+
+                @Override
+                public boolean isAmbiguous() {
+                    return false;
+                }
+
+                @Override
+                public Iterator<ProjectService> iterator() {
+                    return new ArrayList<ProjectService>() {{
+                        add( getProjectService() );
+                    }}.iterator();
+                }
+
                 @Override
                 public ProjectService get() {
                     return getProjectService();
