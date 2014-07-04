@@ -21,7 +21,6 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Instance;
 
 import org.guvnor.common.services.project.service.ProjectService;
 import org.kie.uberfire.metadata.model.KObject;
@@ -38,20 +37,20 @@ import org.uberfire.java.nio.file.Path;
 @ApplicationScoped
 public class TestPropertiesFileIndexer implements TestIndexer<TestPropertiesFileTypeDefinition> {
 
-    private Instance<IOService> ioServiceProvider;
+    private IOService ioService;
 
-    private Instance<ProjectService> projectServiceProvider;
+    private ProjectService projectService;
 
     private TestPropertiesFileTypeDefinition type;
 
     @Override
-    public void setIOServiceProvider( final Instance<IOService> ioServiceProvider ) {
-        this.ioServiceProvider = ioServiceProvider;
+    public void setIOService( final IOService ioService ) {
+        this.ioService = ioService;
     }
 
     @Override
-    public void setProjectServiceProvider( final Instance<ProjectService> projectServiceProvider ) {
-        this.projectServiceProvider = projectServiceProvider;
+    public void setProjectService( final ProjectService projectService ) {
+        this.projectService = projectService;
     }
 
     @Override
@@ -69,7 +68,7 @@ public class TestPropertiesFileIndexer implements TestIndexer<TestPropertiesFile
         InputStream is = null;
         final Properties properties = new Properties();
         try {
-            is = ioServiceProvider.get().newInputStream( path );
+            is = ioService.newInputStream( path );
             properties.load( is );
             is.close();
 

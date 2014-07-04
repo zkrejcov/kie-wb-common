@@ -20,16 +20,13 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.lang.annotation.Annotation;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
-import javax.enterprise.inject.Instance;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.lucene.analysis.Analyzer;
@@ -158,7 +155,6 @@ public abstract class BaseIndexingTest<T extends ResourceTypeDefinition> {
 
     protected IOService ioService() {
         if ( ioService == null ) {
-            final TestIndexer indexer = getIndexer();
             final Map<String, Analyzer> analyzers = getAnalyzers();
             config = new LuceneConfigBuilder()
                     .withInMemoryMetaModelStore()
@@ -168,78 +164,12 @@ public abstract class BaseIndexingTest<T extends ResourceTypeDefinition> {
                     .build();
 
             ioService = new IOServiceIndexedImpl( config.getIndexEngine() );
+            final TestIndexer indexer = getIndexer();
             IndexersFactory.addIndexer( indexer );
 
             //Mock CDI injection and setup
-            indexer.setIOServiceProvider( new Instance<IOService>() {
-
-                @Override
-                public Instance<IOService> select( final Annotation... annotations ) {
-                    return null;
-                }
-
-                @Override
-                public <U extends IOService> Instance<U> select( final Class<U> uClass,
-                                                                 final Annotation... annotations ) {
-                    return null;
-                }
-
-                @Override
-                public boolean isUnsatisfied() {
-                    return false;
-                }
-
-                @Override
-                public boolean isAmbiguous() {
-                    return false;
-                }
-
-                @Override
-                public Iterator<IOService> iterator() {
-                    return new ArrayList<IOService>() {{
-                        add( ioService );
-                    }}.iterator();
-                }
-
-                @Override
-                public IOService get() {
-                    return ioService;
-                }
-            } );
-            indexer.setProjectServiceProvider( new Instance<ProjectService>() {
-                @Override
-                public Instance<ProjectService> select( final Annotation... annotations ) {
-                    return null;
-                }
-
-                @Override
-                public <U extends ProjectService> Instance<U> select( final Class<U> uClass,
-                                                                      final Annotation... annotations ) {
-                    return null;
-                }
-
-                @Override
-                public boolean isUnsatisfied() {
-                    return false;
-                }
-
-                @Override
-                public boolean isAmbiguous() {
-                    return false;
-                }
-
-                @Override
-                public Iterator<ProjectService> iterator() {
-                    return new ArrayList<ProjectService>() {{
-                        add( getProjectService() );
-                    }}.iterator();
-                }
-
-                @Override
-                public ProjectService get() {
-                    return getProjectService();
-                }
-            } );
+            indexer.setIOService( ioService );
+            indexer.setProjectService( getProjectService() );
             indexer.setResourceTypeDefinition( getResourceTypeDefinition() );
         }
         return ioService;

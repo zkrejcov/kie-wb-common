@@ -19,7 +19,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 import javax.inject.Named;
 
@@ -98,13 +97,13 @@ public class JavaFileIndexer implements Indexer {
 
     @Inject
     @Named("ioStrategy")
-    protected Instance<IOService> ioServiceProvider;
+    protected IOService ioService;
 
     @Inject
-    protected Instance<ProjectService> projectServiceProvider;
+    protected ProjectService projectService;
 
     @Inject
-    private Instance<LRUBuilderCache> builderCacheProvider;
+    private LRUBuilderCache builderCache;
 
     @Inject
     protected JavaResourceTypeDefinition javaResourceTypeDefinition;
@@ -119,7 +118,7 @@ public class JavaFileIndexer implements Indexer {
         KObject index = null;
 
         try {
-            final String javaSource = ioServiceProvider.get().readAllString( path );
+            final String javaSource = ioService.readAllString( path );
             final Project project = getProject( path );
 
             if ( project == null ) {
@@ -246,15 +245,15 @@ public class JavaFileIndexer implements Indexer {
     }
 
     protected Project getProject( final Path path ) {
-        return projectServiceProvider.get().resolveProject( Paths.convert( path ) );
+        return projectService.resolveProject( Paths.convert( path ) );
     }
 
     protected Package getPackage( final Path path ) {
-        return projectServiceProvider.get().resolvePackage( Paths.convert( path ) );
+        return projectService.resolvePackage( Paths.convert( path ) );
     }
 
     protected ClassLoader getProjectClassLoader( Project project ) {
-        final KieModule module = builderCacheProvider.get().assertBuilder( project ).getKieModuleIgnoringErrors();
+        final KieModule module = builderCache.assertBuilder( project ).getKieModuleIgnoringErrors();
         final ClassLoader classLoader = KieModuleMetaData.Factory.newKieModuleMetaData( module ).getClassLoader();
         return classLoader;
     }

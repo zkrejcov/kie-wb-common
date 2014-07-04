@@ -17,7 +17,6 @@ package org.kie.workbench.common.services.refactoring.backend.server.drl;
 
 import java.util.HashMap;
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Instance;
 
 import org.drools.compiler.compiler.DrlParser;
 import org.drools.compiler.lang.descr.PackageDescr;
@@ -46,20 +45,20 @@ public class TestDrlFileIndexer implements TestIndexer<TestDrlFileTypeDefinition
 
     private static final Logger logger = LoggerFactory.getLogger( TestDrlFileIndexer.class );
 
-    private Instance<IOService> ioServiceProvider;
+    private IOService ioService;
 
-    private Instance<ProjectService> projectServiceProvider;
+    private ProjectService projectService;
 
     private TestDrlFileTypeDefinition type;
 
     @Override
-    public void setIOServiceProvider( final Instance<IOService> ioServiceProvider ) {
-        this.ioServiceProvider = ioServiceProvider;
+    public void setIOService( final IOService ioService ) {
+        this.ioService = ioService;
     }
 
     @Override
-    public void setProjectServiceProvider( final Instance<ProjectService> projectServiceProvider ) {
-        this.projectServiceProvider = projectServiceProvider;
+    public void setProjectService( final ProjectService projectService ) {
+        this.projectService = projectService;
     }
 
     @Override
@@ -77,7 +76,7 @@ public class TestDrlFileIndexer implements TestIndexer<TestDrlFileTypeDefinition
         KObject index = null;
 
         try {
-            final String drl = ioServiceProvider.get().readAllString( path );
+            final String drl = ioService.readAllString( path );
             final DrlParser drlParser = new DrlParser();
             final PackageDescr packageDescr = drlParser.parse( true,
                                                                drl );
@@ -87,8 +86,8 @@ public class TestDrlFileIndexer implements TestIndexer<TestDrlFileTypeDefinition
             }
 
             final ProjectDataModelOracle dmo = getProjectDataModelOracle( path );
-            final Project project = projectServiceProvider.get().resolveProject( Paths.convert( path ) );
-            final Package pkg = projectServiceProvider.get().resolvePackage( Paths.convert( path ) );
+            final Project project = projectService.resolveProject( Paths.convert( path ) );
+            final Package pkg = projectService.resolvePackage( Paths.convert( path ) );
 
             final DefaultIndexBuilder builder = new DefaultIndexBuilder( project,
                                                                          pkg );
