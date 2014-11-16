@@ -21,7 +21,7 @@ import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
 
 import com.google.gwt.user.client.ui.Composite;
-import org.kie.uberfire.client.common.BusyIndicatorView;
+import org.uberfire.ext.widgets.common.client.common.BusyIndicatorView;
 import org.kie.workbench.common.widgets.viewsource.client.widget.ViewDRLSourceWidget;
 
 @Dependent
