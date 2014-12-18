@@ -26,14 +26,22 @@ import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 import org.drools.core.base.ClassTypeResolver;
 import org.jboss.forge.roaster.Roaster;
+import org.jboss.forge.roaster._shade.org.eclipse.jdt.core.dom.ASTNode;
+import org.jboss.forge.roaster._shade.org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
+import org.jboss.forge.roaster._shade.org.eclipse.jdt.core.dom.BodyDeclaration;
+import org.jboss.forge.roaster._shade.org.eclipse.jdt.core.dom.CompilationUnit;
+import org.jboss.forge.roaster._shade.org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.jboss.forge.roaster.model.JavaType;
 import org.jboss.forge.roaster.model.SyntaxError;
 import org.jboss.forge.roaster.model.Type;
+import org.jboss.forge.roaster.model.VisibilityScoped;
 import org.jboss.forge.roaster.model.source.AnnotationSource;
 import org.jboss.forge.roaster.model.source.AnnotationTargetSource;
 import org.jboss.forge.roaster.model.source.FieldSource;
 import org.jboss.forge.roaster.model.source.Import;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
+import org.jboss.forge.roaster.model.source.JavaInterfaceSource;
+import org.jboss.forge.roaster.model.source.JavaSource;
 import org.jboss.forge.roaster.model.source.MethodSource;
 import org.kie.workbench.common.services.datamodeller.codegen.GenerationContext;
 import org.kie.workbench.common.services.datamodeller.codegen.GenerationEngine;
@@ -43,9 +51,13 @@ import org.kie.workbench.common.services.datamodeller.core.AnnotationDefinition;
 import org.kie.workbench.common.services.datamodeller.core.AnnotationMemberDefinition;
 import org.kie.workbench.common.services.datamodeller.core.DataModel;
 import org.kie.workbench.common.services.datamodeller.core.DataObject;
+import org.kie.workbench.common.services.datamodeller.core.JavaClass;
+import org.kie.workbench.common.services.datamodeller.core.JavaInterface;
 import org.kie.workbench.common.services.datamodeller.core.JavaTypeInfo;
 import org.kie.workbench.common.services.datamodeller.core.ObjectProperty;
 import org.kie.workbench.common.services.datamodeller.core.impl.AnnotationImpl;
+import org.kie.workbench.common.services.datamodeller.core.impl.JavaClassImpl;
+import org.kie.workbench.common.services.datamodeller.core.impl.JavaInterfaceImpl;
 import org.kie.workbench.common.services.datamodeller.core.impl.JavaTypeInfoImpl;
 import org.kie.workbench.common.services.datamodeller.core.impl.ModelFactoryImpl;
 import org.kie.workbench.common.services.datamodeller.driver.AnnotationDriver;
@@ -142,6 +154,8 @@ public class JavaRoasterModelDriver implements ModelDriver {
         List<Path> rootPaths = new ArrayList<Path>();
         rootPaths.add( javaRootPath );
 
+        buildProjectDictionary();
+
         Collection<FileUtils.ScanResult> scanResults = FileUtils.getInstance().scan( ioService, rootPaths, ".java", true );
         if ( scanResults != null ) {
             for ( FileUtils.ScanResult scanResult : scanResults ) {
@@ -180,6 +194,51 @@ public class JavaRoasterModelDriver implements ModelDriver {
             }
         }
         return result;
+    }
+
+    public void buildProjectDictionary() throws ModelDriverException {
+        ModelDriverResult result = new ModelDriverResult( );
+        String fileContent;
+
+        Map<String, org.kie.workbench.common.services.datamodeller.core.JavaType> dictionary = new HashMap<String, org.kie.workbench.common.services.datamodeller.core.JavaType>(  );
+
+        List<Path> rootPaths = new ArrayList<Path>();
+        rootPaths.add( javaRootPath );
+
+        Collection<FileUtils.ScanResult> scanResults = FileUtils.getInstance().scan( ioService, rootPaths, ".java", true );
+        if ( scanResults != null ) {
+            for ( FileUtils.ScanResult scanResult : scanResults ) {
+
+                logger.debug( "Starting file loading into model, file: " + scanResult.getFile() );
+                fileContent = ioService.readAllString( scanResult.getFile() );
+                if ( fileContent == null || "".equals( fileContent ) ) {
+                    logger.debug( "file: " + scanResult.getFile() + " is empty." );
+                    continue;
+                }
+                try {
+                    JavaType<?> javaType = Roaster.parse( fileContent );
+                    if ( javaType.getSyntaxErrors() != null && !javaType.getSyntaxErrors().isEmpty() ) {
+                        //if a file has parsing errors it will be skipped.
+                        addSyntaxErrors( result, scanResult.getFile(), javaType.getSyntaxErrors() );
+                    } else {
+                        if ( javaType.isClass() ) {
+                            JavaClass javaClass = buildJavaClass( (JavaClassSource)javaType, null );
+                            dictionary.put( javaClass.getClassName(), javaClass );
+                        } else if ( javaType.isInterface() ) {
+                            JavaInterface javaInterface = buildJavaInterface( ( JavaInterfaceSource ) javaType, null );
+                            dictionary.put( javaInterface.getClassName(), javaInterface );
+                        } else {
+                            logger.debug( "No Class definition was found for file: " + scanResult.getFile() + ", it will be skipped." );
+                        }
+                    }
+                } catch ( Exception e ) {
+                    //Unexpected parsing o model loading exception.
+                    logger.error( errorMessage( MODEL_LOAD_GENERIC_ERROR, javaRootPath.toUri()), e );
+                    throw new ModelDriverException( errorMessage( MODEL_LOAD_GENERIC_ERROR, javaRootPath.toUri()), e );
+                }
+            }
+        }
+
     }
 
     public ModelDriverResult loadDataObject(final String source, final Path path) throws ModelDriverException {
@@ -312,14 +371,14 @@ public class JavaRoasterModelDriver implements ModelDriver {
         className = javaClassSource.getName();
         packageName = javaClassSource.getPackage();
         qualifiedName = NamingUtils.createQualifiedName( packageName, className );
-
         if ( logger.isDebugEnabled() ) {
             logger.debug( "Building DataObject for, packageName: " + packageName + ", className: " + className );
         }
 
         classTypeResolver = DriverUtils.getInstance().createClassTypeResolver( javaClassSource, classLoader );
 
-        modifiers = driverUtils.buildModifierRepresentation( javaClassSource );
+        //modifiers = driverUtils.buildModifierRepresentation( javaClassSource );
+        modifiers = driverUtils.buildJDTBasedModifierRepresentation( javaClassSource );
 
         DataObject dataObject = dataModel.addDataObject( packageName, className, modifiers );
 
@@ -336,6 +395,14 @@ public class JavaRoasterModelDriver implements ModelDriver {
                 }
             }
 
+            //calculate inner classes for this class. (enums, and interfaces are skipped)
+            List<JavaSource<?>> nestedTypes = javaClassSource.getNestedTypes();
+            if ( nestedTypes != null && nestedTypes.size() > 0 ) {
+                for ( JavaSource<?> nestedType : nestedTypes ) {
+                    addNestedType( dataObject, nestedType );
+                }
+            }
+
             List<FieldSource<JavaClassSource>> fields = javaClassSource.getFields();
             Integer naturalOrder = 0;
             List<PropertyPosition> naturalOrderPositions = new ArrayList<PropertyPosition>();
@@ -343,6 +410,7 @@ public class JavaRoasterModelDriver implements ModelDriver {
 
             if ( fields != null ) {
                 for ( FieldSource<JavaClassSource> field : fields ) {
+
                     if ( driverUtils.isManagedType( field.getType(), classTypeResolver ) ) {
 
                         property = addProperty( dataObject, field, classTypeResolver );
@@ -360,6 +428,7 @@ public class JavaRoasterModelDriver implements ModelDriver {
                 }
                 verifyPositions( dataObject, naturalOrderPositions );
             }
+
             return dataObject;
         } catch ( ClassNotFoundException e) {
             hasErrors = true;
@@ -372,6 +441,99 @@ public class JavaRoasterModelDriver implements ModelDriver {
         } finally {
             if (hasErrors) dataModel.removeDataObject( qualifiedName );
         }
+    }
+
+    void addNestedType( DataObject dataObject, JavaSource<?> nestedType ) {
+        if ( nestedType.isClass() ) {
+            //by now we only process inner classes. Enums and annotations are skipped.
+            JavaClass javaClass = buildJavaClass( (JavaClassSource) nestedType, dataObject );
+            dataObject.getNestedTypes().add( javaClass );
+        }
+    }
+
+    private JavaClass buildJavaClass( JavaClassSource javaClassSource, org.kie.workbench.common.services.datamodeller.core.JavaType enclosingType ) {
+
+        int modifiers = 0;
+
+        if ( enclosingType == null ) {
+            //needed due to Roaster limitations.
+            modifiers = DriverUtils.getInstance().buildJDTBasedModifierRepresentation( javaClassSource );
+        } else {
+            //needed due to Roaster limitations.
+            List bodyDeclarations = ( ( AbstractTypeDeclaration ) ( ( CompilationUnit ) javaClassSource.getInternal() ).types().get( 0 ) ).bodyDeclarations();
+            BodyDeclaration bodyDeclaration;
+            TypeDeclaration typeDeclaration;
+            for ( int i = 0 ; bodyDeclarations != null && i < bodyDeclarations.size(); i++ ) {
+                bodyDeclaration = (BodyDeclaration)bodyDeclarations.get( i );
+                if ( bodyDeclaration instanceof TypeDeclaration ) {
+                    typeDeclaration = (TypeDeclaration) bodyDeclaration;
+                    if (  javaClassSource.getName().equals( typeDeclaration.getName().getIdentifier() ) ) {
+                        modifiers = typeDeclaration.getModifiers();
+                        break;
+                    }
+                }
+            }
+        }
+
+        JavaClassImpl javaClass = new JavaClassImpl( javaClassSource.getPackage(), javaClassSource.getName(), modifiers, enclosingType );
+
+        //calculate inner classes for this class. (enums, and interfaces are skipped)
+        List<JavaSource<?>> nestedTypes = javaClassSource.getNestedTypes();
+        if ( nestedTypes != null && nestedTypes.size() > 0 ) {
+            for ( JavaSource<?> nestedType : nestedTypes ) {
+                addNestedType( javaClass, nestedType );
+            }
+        }
+
+        return javaClass;
+    }
+
+    void addNestedType(  org.kie.workbench.common.services.datamodeller.core.JavaType targetType, JavaSource<?> nestedType ) {
+
+        org.kie.workbench.common.services.datamodeller.core.JavaType calculatedNestedType = null;
+
+        if ( nestedType.isClass() ) {
+            //by now we only process inner classes. Enums and annotations are skipped.
+            calculatedNestedType = buildJavaClass( (JavaClassSource) nestedType, targetType );
+        } else if ( nestedType.isInterface() ) {
+            calculatedNestedType = buildJavaInterface( (JavaInterfaceSource) nestedType, targetType );
+        }
+
+        if ( calculatedNestedType != null ) {
+            if ( targetType.isClass() ) {
+                ((JavaClass)targetType).getNestedTypes().add( calculatedNestedType );
+            } else if ( targetType.isInterface() ) {
+                ((JavaInterface)targetType).getNestedTypes().add( calculatedNestedType );
+            }
+        }
+    }
+
+    private JavaInterface buildJavaInterface( JavaInterfaceSource javaClassSource, org.kie.workbench.common.services.datamodeller.core.JavaType enclosingType ) {
+
+        int modifiers = 0;
+
+        if ( enclosingType == null ) {
+            //needed due to Roaster limitations.
+            modifiers = DriverUtils.getInstance().buildJDTBasedModifierRepresentation( javaClassSource );
+        } else {
+            //needed due to Roaster limitations.
+            List bodyDeclarations = ( ( AbstractTypeDeclaration ) ( ( CompilationUnit ) javaClassSource.getInternal() ).types().get( 0 ) ).bodyDeclarations();
+            BodyDeclaration bodyDeclaration;
+            TypeDeclaration typeDeclaration;
+            for ( int i = 0 ; bodyDeclarations != null && i < bodyDeclarations.size(); i++ ) {
+                bodyDeclaration = (BodyDeclaration)bodyDeclarations.get( i );
+                if ( bodyDeclaration instanceof TypeDeclaration ) {
+                    typeDeclaration = (TypeDeclaration) bodyDeclaration;
+                    if (  javaClassSource.getName().equals( typeDeclaration.getName().getIdentifier() ) ) {
+                        modifiers = typeDeclaration.getModifiers();
+                        break;
+                    }
+                }
+            }
+        }
+
+        JavaInterface javaClass = new JavaInterfaceImpl( javaClassSource.getPackage(), javaClassSource.getName(), modifiers, enclosingType );
+        return javaClass;
     }
 
     private boolean isManagedProperty( ObjectProperty property ) {
@@ -475,11 +637,13 @@ public class JavaRoasterModelDriver implements ModelDriver {
 
     private String resolveTypeName( ClassTypeResolver classTypeResolver, String name ) throws ClassNotFoundException {
         try {
+            /*
             if ( NamingUtils.isQualifiedName( name ) ) {
                 return name;
-            } else {
+            } else {*/
+
                 return classTypeResolver.getFullTypeName( name );
-            }
+            //}
         } catch ( ClassNotFoundException e ) {
             logger.error( "Class could not be resolved for name: " + name, e );
             throw e;

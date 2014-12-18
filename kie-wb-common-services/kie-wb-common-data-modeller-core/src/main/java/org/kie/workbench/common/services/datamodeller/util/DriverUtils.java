@@ -7,6 +7,9 @@ import java.util.List;
 import java.util.Set;
 
 import org.drools.core.base.ClassTypeResolver;
+import org.jboss.forge.roaster._shade.org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
+import org.jboss.forge.roaster._shade.org.eclipse.jdt.core.dom.CompilationUnit;
+import org.jboss.forge.roaster._shade.org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.jboss.forge.roaster.model.Abstractable;
 import org.jboss.forge.roaster.model.JavaType;
 import org.jboss.forge.roaster.model.Member;
@@ -15,6 +18,7 @@ import org.jboss.forge.roaster.model.VisibilityScoped;
 import org.jboss.forge.roaster.model.source.FieldSource;
 import org.jboss.forge.roaster.model.source.Import;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
+import org.jboss.forge.roaster.model.source.JavaInterfaceSource;
 import org.jboss.forge.roaster.model.source.JavaSource;
 import org.kie.workbench.common.services.datamodeller.core.DataObject;
 import org.kie.workbench.common.services.datamodeller.core.ObjectProperty;
@@ -82,6 +86,15 @@ public class DriverUtils {
         packageName = javaClassSource.getPackage();
         //add current package too, if not added, the class type resolver don't resolve current package classes.
         if (packageName != null && !"".equals( packageName )) classImports.add( packageName + ".*" );
+
+        //add current file inner types as import clauses to help the ClassTypeResolver to find variables of inner types
+        //It was detected that current ClassTypeResolver don't resolve inner classes well.
+        List<JavaSource<?>> innerTypes = javaClassSource.getNestedTypes();
+        if ( innerTypes != null ) {
+            for (JavaSource<?> type : innerTypes ) {
+                classImports.add( packageName + "." + javaClassSource.getName() + "." + type.getName() );
+            }
+        }
 
         return new ClassTypeResolver( classImports, classLoader );
     }
@@ -232,6 +245,9 @@ public class DriverUtils {
         if ( type.isParameterized() && type.getTypeArguments().size() > 1 ) return false;
 
         try {
+            Class<?> clazz = classTypeResolver.resolveType( type.getName() );
+           // if ( clazz.isEnum() || clazz.isMemberClass() || clazz.isAnonymousClass() || clazz.isLocalClass() ) return false;
+
             if (type.isParameterized()) {
                 Class<?> bag = classTypeResolver.resolveType( type.getName() );
                 if (!Collection.class.isAssignableFrom( bag )) return false;
@@ -245,6 +261,25 @@ public class DriverUtils {
             throw new ModelDriverException("Class could not be resolved for name: " + type.getName() + ". " + e.getMessage(), e );
         }
     }
+
+
+    /**
+    public boolean isManagedPropertyType( Type type, JavaType encloserType, ClassTypeResolver classTypeResolver) {
+
+    }
+
+    public boolean isManagedClass( Type type, ClassTypeResolver classTypeResolver) throws ModelDriverException {
+        try {
+            String typeName = classTypeResolver.getFullTypeName( type.getName() );
+            Class typeClass = classTypeResolver.getClassLoader().loadClass( typeName );
+            return !typeClass.isEnum() && !typeClass.isAnnotation() && !typeClass.isAnonymousClass() && (!typeClass.isMemberClass() && typeClass.getModifiers())
+
+        } catch ( ClassNotFoundException e ) {
+            throw new ModelDriverException("Class could not be resolved for name: " + type.getName() + ". " + e.getMessage(), e );
+        }
+
+    }
+     **/
 
     public boolean isSimpleClass(Type<?> type) {
         return !type.isArray() && !type.isPrimitive() && !type.isParameterized();
@@ -342,14 +377,30 @@ public class DriverUtils {
     }
 
     public int buildModifierRepresentation(JavaClassSource classSource) {
-        return addModifierRepresentation( 0x0, classSource );
+        int modifiers = addModifierRepresentation( 0x0, classSource );
+        if (classSource.isAbstract()) modifiers = modifiers | Modifier.ABSTRACT;
 
+        return modifiers;
     }
+
+    public int buildJDTBasedModifierRepresentation(JavaClassSource classSource) {
+        //I don't like this approach that much, but current Roaster version doesn't let you know if a class is static of final.
+        return ((AbstractTypeDeclaration)((CompilationUnit )classSource.getInternal()).types().get( 0 )).getModifiers();
+    }
+
+    public int buildJDTBasedModifierRepresentation(JavaInterfaceSource classSource) {
+        //I don't like this approach that much, but current Roaster version doesn't let you know if a class is static of final.
+        return ((AbstractTypeDeclaration)((CompilationUnit )classSource.getInternal()).types().get( 0 )).getModifiers();
+    }
+
 
     public int addModifierRepresentation(int modifiers, Member<?> member) {
         if (member != null) {
-            if (member.isStatic()) modifiers = modifiers | Modifier.STATIC;
-            if (member.isFinal()) modifiers = modifiers | Modifier.FINAL;
+            if (member.isStatic())      modifiers = modifiers | Modifier.STATIC;
+            if (member.isFinal())       modifiers = modifiers | Modifier.FINAL;
+            if (member.isPublic())      modifiers = modifiers | Modifier.PUBLIC;
+            if (member.isProtected())   modifiers = modifiers | Modifier.PROTECTED;
+            if (member.isPrivate())     modifiers = modifiers | Modifier.PRIVATE;
         }
         return modifiers;
     }

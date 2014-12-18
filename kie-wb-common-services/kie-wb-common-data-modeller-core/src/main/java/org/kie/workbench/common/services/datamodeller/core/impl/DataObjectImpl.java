@@ -17,6 +17,7 @@
 package org.kie.workbench.common.services.datamodeller.core.impl;
 
 import org.kie.workbench.common.services.datamodeller.core.DataObject;
+import org.kie.workbench.common.services.datamodeller.core.JavaType;
 import org.kie.workbench.common.services.datamodeller.core.ObjectProperty;
 
 import java.lang.reflect.Modifier;
@@ -25,13 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class DataObjectImpl extends AbstractHasAnnotations implements DataObject {
-
-    private String name;
-
-    private String packageName;
-    
-    private String superClassName;
+public class DataObjectImpl extends JavaClassImpl implements DataObject {
 
     private List<String> imports = new ArrayList<String>();
 
@@ -40,53 +35,11 @@ public class DataObjectImpl extends AbstractHasAnnotations implements DataObject
     int modifiers = 0x0;
 
     public DataObjectImpl(String packageName, String name, int modifiers) {
-        this.setName(name);
-        this.packageName = packageName;
-        this.modifiers = modifiers;
+        super(packageName, name, modifiers);
     }
 
     public DataObjectImpl(String packageName, String name) {
         this(packageName, name, Modifier.PUBLIC);
-    }
-
-    @Override
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    @Override
-    public String getPackageName() {
-        return packageName;
-    }
-
-    @Override
-    public void setPackageName(String packageName) {
-        this.packageName = packageName;
-    }
-
-    @Override
-    public String getClassName() {
-        return ( (packageName != null && !"".equals(packageName)) ? packageName+"." : "") + getName();
-    }
-
-    @Override
-    public boolean hasSuperClass() {
-        return superClassName != null;
-    }
-
-    @Override
-    public String getSuperClassName() {
-        return superClassName;
-    }
-
-    @Override
-    public void setSuperClassName(String superClassName) {
-        this.superClassName = superClassName;
     }
 
     @Override
@@ -118,7 +71,6 @@ public class DataObjectImpl extends AbstractHasAnnotations implements DataObject
         return property;
     }
 
-
     @Override
     public ObjectProperty addProperty(String name, String className, boolean multiple, String bag) {
         ObjectProperty property = new ObjectPropertyImpl(name, className, multiple, bag);
@@ -139,22 +91,12 @@ public class DataObjectImpl extends AbstractHasAnnotations implements DataObject
     }
 
     @Override
-    public List<String> getImports() {
-        return imports;
-    }
-
-    @Override
     public boolean isInterface() {
+        //TODO review this.
         return Modifier.isInterface(modifiers);
     }
 
-    @Override
-    public boolean isAbstract() {
-        return Modifier.isAbstract(modifiers);
-    }
-
-    @Override
-    public boolean isFinal() {
-        return Modifier.isFinal(modifiers);
+    public List<String> getImports() {
+        return imports;
     }
 }

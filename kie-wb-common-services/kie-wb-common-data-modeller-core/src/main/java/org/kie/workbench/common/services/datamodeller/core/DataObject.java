@@ -19,13 +19,9 @@ package org.kie.workbench.common.services.datamodeller.core;
 import java.util.List;
 import java.util.Map;
 
-public interface DataObject extends HasName, HasPackageName, HasClassName, HasAnnotations {
+public interface DataObject extends JavaClass {
 
     List<String> getImports();
-
-    boolean hasSuperClass();
-
-    String getSuperClassName();
 
     void setSuperClassName(String superClass);
 
@@ -44,11 +40,5 @@ public interface DataObject extends HasName, HasPackageName, HasClassName, HasAn
     ObjectProperty addProperty(String name, String className, boolean multiple, String bag, int modifiers);
 
     ObjectProperty removeProperty(String name);
-
-    boolean isInterface();
-
-    boolean isAbstract();
-
-    boolean isFinal();
 
 }
