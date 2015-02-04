@@ -99,16 +99,18 @@ public class ProjectExplorerContentResolver {
 
     public ProjectExplorerContent resolve( final ProjectExplorerContentQuery query ) {
 
-        setupSelectedItems( query );
+        synchronized ( ProjectExplorerContentResolver.class ) {
+            setupSelectedItems( query );
 
-        setSelectedOrganizationalUnit();
-        setSelectedRepository();
-        setSelectedProject();
+            setSelectedOrganizationalUnit();
+            setSelectedRepository();
+            setSelectedProject();
 
-        if ( selectedOrganizationalUnit == null || selectedRepository == null || selectedProject == null ) {
-            return emptyProjectExplorerContent();
-        } else {
-            return projectExplorerContentWithSelections( query.getOptions() );
+            if ( selectedOrganizationalUnit == null || selectedRepository == null || selectedProject == null ) {
+                return emptyProjectExplorerContent();
+            } else {
+                return projectExplorerContentWithSelections( query.getOptions() );
+            }
         }
     }
 
