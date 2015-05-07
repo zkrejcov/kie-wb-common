@@ -34,7 +34,6 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 import org.kie.workbench.common.widgets.client.resources.i18n.NewItemPopupConstants;
 import org.uberfire.commons.data.Pair;
-import org.uberfire.ext.editor.commons.client.validation.ValidatorWithReasonCallback;
 import org.uberfire.ext.widgets.common.client.common.popups.BaseModal;
 import org.uberfire.ext.widgets.common.client.common.popups.footers.ModalFooterOKCancelButtons;
 
@@ -49,24 +48,7 @@ public class NewResourceView extends BaseModal implements NewResourcePresenter.V
 
     private static NewResourceViewBinder uiBinder = GWT.create( NewResourceViewBinder.class );
 
-    private NewResourcePresenter presenter;
-
-    private final Command okCommand = new Command() {
-        @Override
-        public void execute() {
-            onOKButtonClick();
-        }
-    };
-
-    private final Command cancelCommand = new Command() {
-        @Override
-        public void execute() {
-            hide();
-        }
-    };
-
-    private final ModalFooterOKCancelButtons footer = new ModalFooterOKCancelButtons( okCommand,
-                                                                                      cancelCommand );
+    private ModalFooterOKCancelButtons footer;
 
     @UiField
     ControlGroup fileNameGroup;
@@ -87,28 +69,29 @@ public class NewResourceView extends BaseModal implements NewResourcePresenter.V
     VerticalPanel handlerExtensions;
 
     public NewResourceView() {
-        footer.enableOkButton( true );
-
         add( uiBinder.createAndBindUi( this ) );
+    }
+
+    @Override
+    public void initModalFooterButtons( Command okCommand, Command cancelCommand ) {
+        footer = new ModalFooterOKCancelButtons( okCommand,
+                                                 cancelCommand );
+        footer.enableOkButton( true );
         add( footer );
     }
 
     @Override
-    public void init( final NewResourcePresenter presenter ) {
-        this.presenter = presenter;
-    }
-
-    @Override
-    public void show() {
+    public void show( final NewResourceHandler handler ) {
         //Clear previous resource name
         fileNameTextBox.setText( "" );
         fileNameGroup.setType( ControlGroupType.NONE );
         fileNameHelpInline.setText( "" );
+        setActiveHandler(handler);
+        setTitle( NewItemPopupConstants.INSTANCE.popupTitle() + " " + handler.getDescription() );
         super.show();
     }
 
-    @Override
-    public void setActiveHandler( final NewResourceHandler handler ) {
+    private void setActiveHandler( final NewResourceHandler handler ) {
         final List<Pair<String, ? extends IsWidget>> extensions = handler.getExtensions();
         final boolean showExtensions = !( extensions == null || extensions.isEmpty() );
         fileTypeLabel.setText( handler.getDescription() );
@@ -124,42 +107,26 @@ public class NewResourceView extends BaseModal implements NewResourcePresenter.V
         }
     }
 
-    private void onOKButtonClick() {
-        //Generic validation
-        final String fileName = fileNameTextBox.getText();
-        if ( fileName == null || fileName.trim().isEmpty() ) {
-            fileNameGroup.setType( ControlGroupType.ERROR );
-            fileNameHelpInline.setText( NewItemPopupConstants.INSTANCE.fileNameIsMandatory() );
-            return;
-        }
-
-        //Specialized validation
-        presenter.validate( fileName,
-                            new ValidatorWithReasonCallback() {
-
-                                @Override
-                                public void onSuccess() {
-                                    fileNameGroup.setType( ControlGroupType.NONE );
-                                    presenter.makeItem( fileName );
-                                }
-
-                                @Override
-                                public void onFailure() {
-                                    fileNameGroup.setType( ControlGroupType.ERROR );
-                                }
-
-                                @Override
-                                public void onFailure( final String reason ) {
-                                    fileNameGroup.setType( ControlGroupType.ERROR );
-                                    fileNameHelpInline.setText( reason );
-                                }
-
-                            } );
+    @Override
+    public String getFileNameText() {
+        return fileNameTextBox.getText();
     }
 
     @Override
-    public void setTitle( String title ) {
-        super.setTitle( title );
+    public void showError( String errorMessage ) {
+        fileNameGroup.setType( ControlGroupType.ERROR );
+        if ( errorMessage != null ) {
+            fileNameHelpInline.setText( errorMessage );
+        }
     }
 
+    @Override
+    public void showMissingFilenameError() {
+        showError( NewItemPopupConstants.INSTANCE.fileNameIsMandatory() );
+    }
+
+    @Override
+    public void resetControlGroupType() {
+        fileNameGroup.setType( ControlGroupType.NONE );
+    }
 }

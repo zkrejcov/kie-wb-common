@@ -16,13 +16,12 @@
 
 package org.kie.workbench.common.widgets.client.handlers;
 
-import javax.annotation.PostConstruct;
+import com.google.gwt.user.client.Command;
+import com.google.gwt.user.client.ui.IsWidget;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.guvnor.common.services.project.model.Package;
-import org.kie.workbench.common.widgets.client.resources.i18n.NewItemPopupConstants;
-import org.uberfire.client.mvp.UberView;
 import org.uberfire.commons.validation.PortablePreconditions;
 import org.uberfire.ext.editor.commons.client.validation.ValidatorWithReasonCallback;
 
@@ -31,34 +30,82 @@ public class NewResourcePresenter {
 
     public interface View
             extends
-            UberView<NewResourcePresenter> {
+            IsWidget {
 
-        void show();
+        void show( final NewResourceHandler activeHandler );
 
         void hide();
 
-        void setActiveHandler( final NewResourceHandler activeHandler );
+        public void showError( String errorMessage );
 
-        void setTitle( String title );
+        public void showMissingFilenameError();
+
+        public String getFileNameText();
+
+        public void resetControlGroupType();
+
+        public void initModalFooterButtons( Command okCommand, Command cancelCommand );
 
     }
 
-    @Inject
     private View view;
 
     private NewResourceHandler activeHandler = null;
 
-    @PostConstruct
-    private void setup() {
-        view.init( this );
+    @Inject
+    public NewResourcePresenter(View viewImpl) {
+        this.view = viewImpl;
+        Command okCommand = new Command() {
+            @Override
+            public void execute() {
+                onOKButtonClick();
+            }
+        };
+        Command cancelCommand = new Command() {
+            @Override
+            public void execute() {
+                view.hide();
+            }
+        };
+        view.initModalFooterButtons( okCommand,
+                                     cancelCommand );
+    }
+
+    private void onOKButtonClick() {
+        //Generic validation
+        final String fileName = view.getFileNameText();
+        if ( fileName == null || fileName.trim().isEmpty() ) {
+            view.showMissingFilenameError();
+            return;
+        }
+
+        //Specialized validation
+        validate( fileName,
+                  new ValidatorWithReasonCallback() {
+
+                      @Override
+                      public void onSuccess() {
+                          view.resetControlGroupType();
+                          makeItem( fileName );
+                      }
+
+                      @Override
+                      public void onFailure() {
+                          view.showError( null );
+                      }
+
+                      @Override
+                      public void onFailure( final String reason ) {
+                          view.showError( reason );
+                      }
+
+                  } );
     }
 
     public void show( final NewResourceHandler handler ) {
         activeHandler = PortablePreconditions.checkNotNull( "handler",
                                                             handler );
-        view.show();
-        view.setActiveHandler( activeHandler );
-        view.setTitle( NewItemPopupConstants.INSTANCE.popupTitle() + " " + getActiveHandlerDescription() );
+        view.show( activeHandler );
     }
 
     public void validate( final String fileName,
@@ -83,14 +130,6 @@ public class NewResourcePresenter {
 
     public void complete() {
         view.hide();
-    }
-
-    private String getActiveHandlerDescription() {
-        if ( activeHandler != null ) {
-            return activeHandler.getDescription();
-        } else {
-            return "";
-        }
     }
 
 }
